@@ -1,6 +1,6 @@
 # MIT License
 #
-# Copyright (c) 2021 Souvik Nandi, DisunicX
+# Copyright (c) 2021 Souvik Nandi, Neutrino
 #
 # Permission is granted to use, copy, modify, and distribute this software for any purpose with or without fee, provided the copyright notice appears in all copies.
 #
@@ -9,7 +9,7 @@
 Version: 1.5.6
 Status: The Modernization & Polish Update
 
-Welcome to a major new version of DisunicX! This update overhauls the user interface for a more polished and professional experience, adds key organizational features, and includes numerous fixes and improvements.
+Welcome to a major new version of Neutrino! This update overhauls the user interface for a more polished and professional experience, adds key organizational features, and includes numerous fixes and improvements.
 
 ### ✨ UI & UX Modernization
 

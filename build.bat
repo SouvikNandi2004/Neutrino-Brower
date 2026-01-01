@@ -8,13 +8,13 @@
 
 @echo off
 echo ============================================
-echo Building DisunicX with PyInstaller...
+echo Building Neutrino with PyInstaller...
 echo ============================================
 
 pyinstaller ^
 --noconsole ^
 --windowed ^
---name DisunicX ^
+--name Neutrino ^
 --add-data "favicon.png;." ^
 --add-data "favicon.ico;." ^
 --add-data "disunic.exe;." ^

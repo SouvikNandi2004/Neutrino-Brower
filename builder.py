@@ -69,7 +69,7 @@ class BuilderWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle(f"DisunicX Builder v{self.__version__}")
+        self.setWindowTitle(f"Neutrino Builder v{self.__version__}")
         self.setMinimumSize(800, 700)
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Window)
         self._drag_pos = QPoint()
@@ -102,7 +102,7 @@ class BuilderWindow(QMainWindow):
         icon_label.setPixmap(create_icon_from_svg(SVG_ICONS['new_window'], self.theme['ICON_COLOR'], QSize(18,18)).pixmap(QSize(18,18)))
         title_bar_layout.addWidget(icon_label)
 
-        title_label = QLabel(f"DisunicX Builder v{self.__version__}")
+        title_label = QLabel(f"Neutrino Builder v{self.__version__}")
         title_label.setObjectName("TitleLabel")
         title_bar_layout.addWidget(title_label)
         title_bar_layout.addStretch()
@@ -211,8 +211,8 @@ class BuilderWindow(QMainWindow):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     QSettings.setDefaultFormat(QSettings.Format.IniFormat)
-    app.setApplicationName("DisunicXBuilder")
-    app.setOrganizationName("DisunicX")
+    app.setApplicationName("NeutrinoBuilder")
+    app.setOrganizationName("Neutrino")
 
     window = BuilderWindow()
     window.show()

@@ -13,7 +13,7 @@ def perform_factory_reset_if_needed():
     wipes all user data directories before the main application initializes them.
     This is called before Tor or the main application window are started.
     """
-    settings = QSettings("DisunicX", "Browser")
+    settings = QSettings("Neutrino", "Browser")
     if settings.value("factory_reset_pending", False, type=bool):
         print("Factory reset pending, wiping all user data...")
 
@@ -66,15 +66,15 @@ if __name__ == "__main__":
     # Use INI file for settings instead of platform-native (e.g., Windows Registry)
     QSettings.setDefaultFormat(QSettings.Format.IniFormat)
     # Set application name and organization for QSettings
-    app.setApplicationName("DisunicX")
-    app.setOrganizationName("DisunicX")
+    app.setApplicationName("Neutrino")
+    app.setOrganizationName("Neutrino")
     
     # Perform reset check BEFORE starting Tor or creating the main window
     perform_factory_reset_if_needed()
 
     # --- Tor Process Startup ---
     tor_process = None
-    settings = QSettings("DisunicX", "Browser")
+    settings = QSettings("Neutrino", "Browser")
     if settings.value("use_proxy", True, type=bool):
         if sys.platform == "win32": # Only start Tor on Windows and Linux
             # On Windows, we expect a bundled Tor executable.
