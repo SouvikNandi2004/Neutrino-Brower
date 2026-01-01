@@ -109,7 +109,7 @@ class WelcomeDialog(DraggableFramelessDialog):
 
         header_layout.addWidget(icon_label, 0, Qt.AlignmentFlag.AlignCenter)
 
-        title_label = QLabel("Welcome to DisunicX")
+        title_label = QLabel("Welcome to Neutrino")
         title_label.setObjectName("DialogTitleLabel")
         title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         header_layout.addWidget(title_label)
@@ -136,10 +136,10 @@ class WelcomeDialog(DraggableFramelessDialog):
 
         terms_label = QLabel(
             "<h3>Disclaimer & Terms of Use</h3>"
-            "<p>DisunicX Browser is an open-source project. By using this software, you acknowledge and agree to the following:</p>"
+            "<p>Neutrino Browser is an open-source project. By using this software, you acknowledge and agree to the following:</p>"
             "<ul>"
             "<li><b>At Your Own Risk:</b> This software is provided 'as is', without warranty of any kind. You assume all risks associated with its use, including but not limited to data loss, system failure, or security breaches.</li>"
-            "<li><b>No Liability:</b> The developers and contributors of DisunicX are not liable for any direct, indirect, incidental, or consequential damages arising from the use of this software.</li>"
+            "<li><b>No Liability:</b> The developers and contributors of Neutrino are not liable for any direct, indirect, incidental, or consequential damages arising from the use of this software.</li>"
             "<li><b>Legal Responsibility:</b> You are solely responsible for your actions while using this browser. Any illegal, harmful, or unethical activities are strictly your own responsibility.</li>"
             "</ul>"
             "<p>By clicking 'Accept & Continue', you confirm that you have read, understood, and agree to be bound by these terms.</p>"
