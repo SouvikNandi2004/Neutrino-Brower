@@ -1,14 +1,14 @@
 <!--
 MIT License
 
-Copyright (c) 2021 Souvik Nandi, DisunicX
+Copyright (c) 2021 Souvik Nandi, Neutrino
 
 Permission is granted to use, copy, modify, and distribute this software for any purpose with or without fee, provided the copyright notice appears in all copies.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
 -->
 
-# DisunicX Browser
+# Neutrino Browser
 
 **A modern, production-ready, customizable, privacy-focused web browser proudly developed in India. Built with Python and PySide6, it leverages the Tor network for enhanced anonymity and security.**
 
@@ -16,7 +16,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
 
 ## 📖 About The Project
 
-DisunicX is a production-ready web browser, proudly developed in India, designed from the ground up with privacy as its core principle. It integrates seamlessly with the Tor network, routing your traffic through Tor's volunteer-run overlay network to conceal your location and browsing activity from surveillance and traffic analysis.
+Neutrino is a production-ready web browser, proudly developed in India, designed from the ground up with privacy as its core principle. It integrates seamlessly with the Tor network, routing your traffic through Tor's volunteer-run overlay network to conceal your location and browsing activity from surveillance and traffic analysis.
 
 The entire user interface is crafted using PyQt6 (Qt for Python), providing a sleek, modern, and responsive dark-themed experience. It's a testament to what can be achieved with Python in the desktop application space.
 
@@ -39,8 +39,8 @@ The entire user interface is crafted using PyQt6 (Qt for Python), providing a sl
 *   **Tab Muting**: Easily mute and unmute individual tabs with a clickable audio indicator.
 *   **Session Restore**: Configure the browser to "Continue where you left off," restoring your tabs from the previous session.
 *   **Bookmarks Bar with Folders**: A fully functional bookmarks bar that supports nested folders for better organization.
-*   **Integrated Download Manager**: A built-in page (`disunic://downloads`) to manage all your downloads, with support for pausing, resuming, and canceling.
-*   **Rich History Page**: A full-featured, searchable history page (`disunic://history`) to easily find pages you've visited.
+*   **Integrated Download Manager**: A built-in page (`neutrino://downloads`) to manage all your downloads, with support for pausing, resuming, and canceling.
+*   **Rich History Page**: A full-featured, searchable history page (`neutrino://history`) to easily find pages you've visited.
 *   **Find in Page**: Quickly search for text within the current webpage using Ctrl+F.
 *   **Picture-in-Picture (PiP)**: Pop out videos into a floating window to watch while you browse other tabs.
 *   **Extra Tools**:
@@ -51,7 +51,7 @@ The entire user interface is crafted using PyQt6 (Qt for Python), providing a sl
 #### Developer & Advanced Features
 *   **Application Builder**: A built-in tool to create your own standalone applications:
     *   **Site-Specific Apps**: Generate a lightweight, single-site browser for any website.
-    *   **Custom Browsers**: Build and distribute your own custom-branded version of the full DisunicX browser.
+    *   **Custom Browsers**: Build and distribute your own custom-branded version of the full Neutrino browser.
 *   **Developer Tools**: Includes essential developer features like "View Page Source" and "Inspect Element".
 *   **Automatic Updates**: The browser automatically checks for new releases on GitHub and prompts you to download the latest version.
 *   **Advanced Settings**: Toggle Tor network usage, manage hardware acceleration, and set a custom User-Agent.
@@ -62,43 +62,44 @@ The entire user interface is crafted using PyQt6 (Qt for Python), providing a sl
 *   PyQt6 (The official Python bindings for Qt)
 *   Tor
 
+## 🚀 Installation & Setup
 
-## Tor Installation (Linux)
+Follow these steps to get Neutrino Browser running on your local machine from source.
 
-For Linux users, DisunicX relies on a system-wide Tor installation. Follow the instructions below to set up Tor on your system.
+### 1. Prerequisites
 
-### Debian/Ubuntu
+*   **Python**: Version 3.8 or newer.
+*   **Git**: To clone the repository.
+*   **Tor**: For full privacy features, a running Tor service is required. See the "Tor Setup" section below for detailed instructions.
 
-The easiest way to install Tor on Debian-based systems (like Ubuntu) is through the official Tor Project repository. This ensures you get the latest stable version.
+### 2. Clone the Repository
 
-1.  **Add the Tor Project repository:**
-    Open a terminal and add the following lines to `/etc/apt/sources.list` or a new file in `/etc/apt/sources.list.d/tor.list`:
-
-    ```
-    deb     [signed-by=/usr/share/keyrings/tor-archive-keyring.gpg] https://deb.torproject.org/torproject.org <DISTRIBUTION> main
-    deb-src [signed-by=/usr/share/keyrings/tor-archive-keyring.gpg] https://deb.torproject.org/torproject.org <DISTRIBUTION> main
-    ```
-    Replace `<DISTRIBUTION>` with your Debian/Ubuntu codename (e.g., `focal` for Ubuntu 20.04, `jammy` for Ubuntu 22.04, `bookworm` for Debian 12). You can find your distribution's codename by running `lsb_release -cs`.
-
-2.  **Install the Tor Project's GPG key:**
-
-    ```bash
-    wget -qO- https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc | gpg --dearmor | sudo tee /usr/share/keyrings/tor-archive-keyring.gpg >/dev/null
-    ```
-
-3.  **Update your package lists and install Tor:**
-
-    ```bash
-    sudo apt update
-    sudo apt install tor deb.torproject.org-keyring
-    ```
-
-### Fedora
-
-On Fedora, you can install Tor from the official repositories:
+Open your terminal or command prompt, navigate to where you want to store the project, and run:
 
 ```bash
-sudo dnf install tor
+git clone https://github.com/SouvikNandi1/disunicx2021.git
+cd disunicx2021
+```
+
+### 3. Install Dependencies
+
+It's highly recommended to use a virtual environment.
+
+```bash
+# Create and activate a virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install required packages
+pip install PyQt6 PyQt6-WebEngine "qrcode[pil]"
+```
+
+### 4. Run the Browser
+
+You're all set! Launch the browser by running `main.py`:
+
+```bash
+python main.py
 ```
 
 ### Arch Linux
