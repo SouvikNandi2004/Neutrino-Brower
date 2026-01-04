@@ -10,7 +10,7 @@ Proudly developed in 🇮🇳 **India**
 ---
 
 <p align="center">
-  <a href="https://github.com/SouvikNandi2004/Neutrino-Browser/blob/main/LICENSE">
+  <a href="https://github.com/SouvikNandi2004/Neutrino-Brower/blob/stable/LICENSE">
     <img src="https://img.shields.io/github/license/SouvikNandi2004/Neutrino-Browser?style=for-the-badge&color=1e90ff" />
   </a>
 </p>
