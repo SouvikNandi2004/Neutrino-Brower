@@ -1,178 +1,240 @@
-<!--
-MIT License
+<div align="center">
 
-Copyright (c) 2021 Souvik Nandi, Neutrino
+# 🌌 Neutrino Browser
 
-Permission is granted to use, copy, modify, and distribute this software for any purpose with or without fee, provided the copyright notice appears in all copies.
+### A **modern, privacy-first desktop web browser** built with **Python & PyQt6**, powered by the **Tor network**.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
--->
-
-# Neutrino Browser
-
-**A modern, production-ready, customizable, privacy-focused web browser proudly developed in India. Built with Python and PySide6, it leverages the Tor network for enhanced anonymity and security.**
+**Fast • Secure • Anonymous • Customizable**
+Proudly developed in 🇮🇳 **India**
 
 ---
 
-## 📖 About The Project
+<p align="center">
+  <a href="https://github.com/SouvikNandi2004/Neutrino-Browser/blob/main/LICENSE">
+    <img src="https://img.shields.io/github/license/SouvikNandi2004/Neutrino-Browser?style=for-the-badge&color=1e90ff" />
+  </a>
+</p>
 
-Neutrino is a production-ready web browser, proudly developed in India, designed from the ground up with privacy as its core principle. It integrates seamlessly with the Tor network, routing your traffic through Tor's volunteer-run overlay network to conceal your location and browsing activity from surveillance and traffic analysis.
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white" />
+  <img src="https://img.shields.io/badge/PyQt-6-41CD52?style=for-the-badge&logo=qt" />
+  <img src="https://img.shields.io/badge/Tor-Network-7E4798?style=for-the-badge&logo=tor-project" />
+  <img src="https://img.shields.io/badge/Made%20in-India-FF9933?style=for-the-badge" />
+</p>
 
-The entire user interface is crafted using PyQt6 (Qt for Python), providing a sleek, modern, and responsive dark-themed experience. It's a testament to what can be achieved with Python in the desktop application space.
+</div>
 
-### ✨ Key Features
+---
 
-#### Privacy & Security
-*   **Tor Integration**: Automatically connects to and routes traffic through the Tor network. A status indicator in the status bar keeps you informed of the connection.
-*   **Privacy-Focused Settings**: Control cookie policies, tracking protection, and set security levels (Standard, Safer, Safest) that manage JavaScript, plugins, and other potentially risky features.
-*   **Modernized Security Icons**: A clear, modern lock icon indicates a secure connection.
+## ✨ Overview
 
-#### Modern User Interface
-*   **Customizable Theming Engine**: Choose from over a dozen built-in themes (Dark, Light, Solarized, Gruvbox, etc.) or create, edit, and save your own custom themes with the built-in theme editor.
-*   **Polished UI Elements**: A beautiful, modern interface with a redesigned settings page, custom-drawn frameless window controls, and polished menus with bolder fonts and icons.
-*   **Custom New Tab Page**: An elegant and functional new tab page featuring a search bar, quick links to your most visited sites, and a customizable background.
-*   **Enhanced URL Bar**: A prominent URL bar with a thicker border and clear focus states.
-*   **Consistent Dialogs**: All pop-ups and dialogs (including JavaScript alerts) share a consistent, modern style.
+**Neutrino Browser** is a sleek, next-generation desktop browser focused on **privacy, security, and aesthetics**. It seamlessly integrates with the **Tor network**, giving users anonymity by default, while offering a **beautiful modern UI** and **powerful productivity tools**.
 
-#### Productivity & Features 
-*   **Tabbed Browsing**: A familiar and intuitive tabbed browsing experience with movable and closable tabs.
-*   **Tab Muting**: Easily mute and unmute individual tabs with a clickable audio indicator.
-*   **Session Restore**: Configure the browser to "Continue where you left off," restoring your tabs from the previous session.
-*   **Bookmarks Bar with Folders**: A fully functional bookmarks bar that supports nested folders for better organization.
-*   **Integrated Download Manager**: A built-in page (`neutrino://downloads`) to manage all your downloads, with support for pausing, resuming, and canceling.
-*   **Rich History Page**: A full-featured, searchable history page (`neutrino://history`) to easily find pages you've visited.
-*   **Find in Page**: Quickly search for text within the current webpage using Ctrl+F.
-*   **Picture-in-Picture (PiP)**: Pop out videos into a floating window to watch while you browse other tabs.
-*   **Extra Tools**:
-    *   Save pages directly to PDF.
-    *   Create a QR code for the current page URL.
-    *   Clear all browsing data with a single click.
+Built entirely with **Python + PyQt6**, Neutrino combines performance, flexibility, and deep customization — without compromising user privacy.
 
-#### Developer & Advanced Features
-*   **Application Builder**: A built-in tool to create your own standalone applications:
-    *   **Site-Specific Apps**: Generate a lightweight, single-site browser for any website.
-    *   **Custom Browsers**: Build and distribute your own custom-branded version of the full Neutrino browser.
-*   **Developer Tools**: Includes essential developer features like "View Page Source" and "Inspect Element".
-*   **Automatic Updates**: The browser automatically checks for new releases on GitHub and prompts you to download the latest version.
-*   **Advanced Settings**: Toggle Tor network usage, manage hardware acceleration, and set a custom User-Agent.
+---
 
-### Built With
+## 🛡️ Privacy & Security
 
-*   Python
-*   PyQt6 (The official Python bindings for Qt)
-*   Tor
+* 🔒 **Native Tor Integration**
+  Automatically routes traffic through the Tor network with real-time connection status.
 
-## 🚀 Installation & Setup
+* 🧠 **Security Levels**
+  Choose between **Standard / Safer / Safest** modes to control JavaScript, APIs, and risky features.
 
-Follow these steps to get Neutrino Browser running on your local machine from source.
+* 🍪 **Advanced Privacy Controls**
+  Manage cookies, trackers, permissions, and browser data with ease.
 
-### 1. Prerequisites
+* 🔐 **Modern Security Indicators**
+  Clear HTTPS and security state icons in the URL bar.
 
-*   **Python**: Version 3.8 or newer.
-*   **Git**: To clone the repository.
-*   **Tor**: For full privacy features, a running Tor service is required. See the "Tor Setup" section below for detailed instructions.
+---
 
-### 2. Clone the Repository
+## 🎨 Modern User Experience
 
-Open your terminal or command prompt, navigate to where you want to store the project, and run:
+* 🖌️ **Advanced Theme Engine**
+  15+ built-in themes (Dark, Light, Solarized, Gruvbox, Dracula & more)
+
+  * Create, edit, and save your **own custom themes**.
+
+* 🪟 **Frameless Modern Window**
+  Custom-drawn title bar, window controls, and smooth animations.
+
+* 🆕 **Custom New Tab Page**
+  Minimal, elegant dashboard with:
+
+  * Search bar
+  * Frequently visited sites
+  * Custom background support
+
+* 🌐 **Enhanced URL Bar**
+  Thick borders, focus highlights, and improved visibility.
+
+* 💬 **Consistent UI Dialogs**
+  All popups, alerts, and JavaScript dialogs follow the same modern design language.
+
+---
+
+## ⚙️ Core Browser Features
+
+* 📑 **Tabbed Browsing** (Movable & Closable)
+* 🔇 **Per‑Tab Audio Muting**
+* 🔄 **Session Restore** (Continue where you left off)
+* ⭐ **Bookmarks Bar with Folders**
+* ⬇️ **Integrated Download Manager** (`neutrino://downloads`)
+* 🕘 **Rich Browsing History** (`neutrino://history`)
+* 🔍 **Find in Page** (`Ctrl + F`)
+* 📺 **Picture‑in‑Picture (PiP)** Video Mode
+
+### 🧰 Extra Utilities
+
+* 🧾 Save webpages as **PDF**
+* 📱 Generate **QR codes** for page URLs
+* 🧹 One‑click **Clear Browsing Data**
+
+---
+
+## 🛠️ Developer & Power‑User Tools
+
+* 🧩 **Application Builder**
+
+  ### 🔹 Site‑Specific App Builder
+
+  Turn any website into a standalone desktop app:
+
+  * Locked single‑site window
+  * Custom name & icon
+  * Native taskbar integration
+
+  ### 🔹 Full Browser Builder
+
+  Create and distribute your own **custom‑branded Neutrino Browser**:
+
+  * Custom update source
+  * Modified defaults
+  * Shareable builds
+
+* 🧪 **Developer Tools**
+  View Source • Inspect Element
+
+* 🔄 **Automatic Updates**
+  GitHub-based update checks with notifications
+
+* ⚙️ **Advanced Settings**
+  Hardware acceleration • User‑Agent • Tor toggles
+
+---
+
+## 🚀 Installation
+
+### 🔧 Requirements
+
+* **Python** 3.8+
+* **Git**
+* **Tor Service** (recommended for full privacy)
+
+---
+
+### 📥 Clone Repository
 
 ```bash
-git clone https://github.com/SouvikNandi1/disunicx2021.git
-cd disunicx2021
+git clone https://github.com/SouvikNandi2004/Neutrino-Browser.git
+cd Neutrino-Browser
 ```
 
-### 3. Install Dependencies
+---
 
-It's highly recommended to use a virtual environment.
+### 🐍 Virtual Environment (Recommended)
 
 ```bash
-# Create and activate a virtual environment
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install required packages
-pip install PyQt6 PyQt6-WebEngine "qrcode[pil]"
+source venv/bin/activate  # Windows: venv\Scripts\activate
 ```
 
-### 4. Run the Browser
+---
 
-You're all set! Launch the browser by running `main.py`:
+### 📦 Install Dependencies
+
+#### Windows / macOS
 
 ```bash
-python main.py
+pip install -r requirements.txt
 ```
 
-### Arch Linux
-
-On Arch Linux, Tor is available in the official repositories:
+> Runtime only:
 
 ```bash
-sudo pacman -S tor
+pip install PyQt6 PyQt6-WebEngine qrcode[pil] packaging
 ```
 
-### Other Distributions
-
-For other Linux distributions, please refer to the official Tor Project documentation for installation instructions: https://community.torproject.org/relay/setup/bridge/debian-ubuntu/
-
-### Starting and Enabling Tor
-
-After installation, ensure the Tor service is running and enabled to start on boot:
+#### Debian / Ubuntu / Kali
 
 ```bash
+sudo apt update
+sudo apt install python3-pyqt6 python3-pyqt6.qtwebengine python3-pyqt6.qtsvg python3-qrcode python3-pil python3-packaging
+```
+
+#### Arch Linux
+
+```bash
+sudo pacman -S python-pyqt6 python-pyqt6-webengine python-pyqt6-svg python-qrcode python-pillow python-packaging
+```
+
+---
+
+## 🧅 Tor Setup
+
+```bash
+# Debian / Ubuntu / Kali
+sudo apt install tor
 sudo systemctl start tor
 sudo systemctl enable tor
 ```
 
-You can check the status of the Tor service with:
+Check status:
 
 ```bash
 systemctl status tor
 ```
 
-Once Tor is installed and running, DisunicX should automatically detect and use it.
+Neutrino will automatically detect Tor when running.
 
 ---
 
-##  Application Builder
+## ▶️ Run Neutrino Browser
 
-DisunicX includes a powerful built-in tool that allows you to build and package new applications. This feature can be accessed by running `builder.py` from the project root.
-
-### Site-Specific App Builder
-
-This tool lets you create a lightweight, standalone desktop application for any website. It's perfect for turning your favorite web apps (like YouTube, Discord, or a project management tool) into native-feeling desktop experiences.
-
-**Features:**
--   Creates a minimal browser window locked to a single URL.
--   The application gets its own taskbar icon and window.
--   Configurable options:
-    -   **Application Name**: The name that appears in the window title.
-    -   **Website URL**: The web address the application will load.
-    -   **Application Icon**: A custom `.ico` file for the application's icon.
-
-### Full Browser Builder
-
-This mode allows you to create a complete, distributable, and custom-branded version of the DisunicX browser. You can customize it and share it with others.
-
--   **Browser Name**: The name for your custom browser.
--   **Application Icon**: A custom `.ico` file for the browser's icon.
--   **Update Check URL**: A URL for the browser's automatic update checker. This can be a GitHub repository (`user/repo`) or a direct link to a release JSON file.
+```bash
+python main.py
+```
 
 ---
 
 ## ⚠️ Disclaimer
 
-The developer, Souvik Nandi, is not responsible for any illegal, harmful, or unethical activities performed using this browser. You use this software at your own risk.
+Neutrino Browser is provided **as‑is**. The developer is **not responsible** for illegal, harmful, or unethical activities performed using this software.
+
+Use responsibly.
 
 ---
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Licensed under the **MIT License**.
 
 ---
 
 ## 📬 Contact
 
-Souvik Nandi - souviknandi.11.2004@gmail.com - Telegram: t.me/SouvikNandi1 
+**Souvik Nandi**
+📧 Email: [souviknandi.11.2004@gmail.com](mailto:souviknandi.11.2004@gmail.com)
+💬 Telegram: [https://t.me/SouvikNandi1](https://t.me/SouvikNandi1)
 
-Project Link: https://github.com/SouvikNandi1/disunicx2021
+🔗 **Project:** [https://github.com/SouvikNandi2004/Neutrino-Browser](https://github.com/SouvikNandi2004/Neutrino-Browser)
+
+---
+
+<div align="center">
+
+⭐ If you like this project, consider starring it on GitHub!
+
+</div>
