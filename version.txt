@@ -8,35 +8,3 @@
 
 Version: 1.5.6
 Status: The Modernization & Polish Update
-
-Welcome to a major new version of Neutrino! This update overhauls the user interface for a more polished and professional experience, adds key organizational features, and includes numerous fixes and improvements.
-
-### ✨ UI & UX Modernization
-
-*   **Redesigned Settings Page**: The settings page has been completely redesigned with a modern sidebar layout, improved alignment for all controls, and clearer sectioning for a more intuitive experience.
-*   **Modern Welcome Dialog**: The first-run welcome dialog has been updated with a more modern design, a rounded logo, and improved readability.
-*   **New Tab Page Quick Links**: The new tab page now features a "Quick Links" section that displays your most frequently visited sites. It includes a polished design and a helpful message for new users.
-*   **Consistent Dialogs & Pop-ups**: All pop-up dialogs, including JavaScript alerts (`alert()`, `confirm()`, `prompt()`) and settings confirmations, now use the modern, custom-styled message boxes.
-*   **Prominent Empty States**: The "No Downloads" message in the download manager is now more prominent and user-friendly.
-*   **Polished Menus**: Both the main menu and context menus have been updated with better icons, spacing, and bolder fonts for improved readability.
-*   **Modernized Icons**: The secure connection (lock) icon has been updated to a sleeker, more modern design.
-*   **Enhanced URL Bar**: The URL bar border has been increased to 3px for better visibility and prominence.
-*   **Modern Status Bar**: The status bar has been redesigned to feel more integrated with the main window, with pill-shaped indicators for a cleaner look.
-
-### 🚀 New Features
-
-*   **Bookmarks Bar with Folders**: The bookmarks bar now supports nested folders for better organization. You can create folders and add bookmarks directly to them via context menus.
-*   **Full-Fledged Theming Engine**:
-    *   **Theme Editor**: Create, edit, and save your own custom themes directly within the settings page.
-    *   **Expanded Theme Support**: Added over a dozen new built-in themes like Solarized, Gruvbox, Neon, and more.
-*   **Session Restore**: The browser can now "Continue where you left off," restoring your tabs from the previous session. This can be configured in the settings.
-*   **Tab Muting**: Mute and unmute individual tabs with a clickable audio indicator or via the tab's context menu.
-*   **Find in Page**: A "Find in Page" bar (Ctrl+F) has been added for searching within the current webpage.
-*   **Picture-in-Picture (PiP)**: Pop out videos into a floating window to watch while you browse other tabs.
-
-### ✅ Stability & Improvements
-
-*   **Reliable Factory Reset**: The factory reset process is now more reliable and includes a countdown timer before restarting the browser.
-*   **Clean Shutdown**: The browser and all related processes (like Tor) now terminate correctly.
-*   **Improved Status Bar**: The status bar now provides more contextual information and temporary messages (e.g., "Bookmark added") that disappear automatically.
-*   **Code Quality**: Significant refactoring to improve code structure, decouple components, and enhance stability.

@@ -5,7 +5,6 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHB
 from PyQt6.QtCore import QSettings, Qt, QPoint, QSize, QEvent
 from PyQt6.QtGui import QIcon
 
-# Add the 'bin' directory to the Python path so we can import our modules
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'bin'))
 
 from bin.builder_page import BuilderPage
@@ -40,10 +39,8 @@ DEFAULT_THEMES = {
 }
 
 class MockMainWindow:
-    """A mock main window to provide theme and color info to the BuilderPage."""
     def __init__(self):
         self.load_themes()
-        # Use a default dark theme for the standalone builder, but allow it to be overridden by custom themes
         self.theme_name = "dark"
         self.theme = self.THEMES.get(self.theme_name, DEFAULT_THEMES["dark"])
 
@@ -51,10 +48,8 @@ class MockMainWindow:
         self.DANGER_COLOR = self.theme.get("DANGER_COLOR", "#991B1B")
 
     def load_themes(self):
-        """Loads default themes and merges custom themes from themes.json."""
         self.THEMES = DEFAULT_THEMES.copy()
         try:
-            # The builder.py script is in the root, so we need to construct the path to bin/themes.json
             script_dir = os.path.dirname(os.path.abspath(__file__))
             themes_path = os.path.join(script_dir, 'bin', 'themes.json')
             if os.path.exists(themes_path):
@@ -79,19 +74,15 @@ class BuilderWindow(QMainWindow):
         self.ACCENT_COLOR = mock_main.ACCENT_COLOR
         self.DANGER_COLOR = mock_main.DANGER_COLOR
         
-        # Set window icon
         self.setWindowIcon(create_icon_from_svg(SVG_ICONS['new_window'], self.theme['ICON_COLOR']))
 
-        # Main container for shadow and border
         self.main_container = QWidget()
         self.main_container.setObjectName("MainContainer")
         
-        # Main layout
         main_layout = QVBoxLayout(self.main_container)
-        main_layout.setContentsMargins(1, 1, 1, 1) # To show the border
+        main_layout.setContentsMargins(1, 1, 1, 1)
         main_layout.setSpacing(0)
 
-        # --- Custom Title Bar ---
         self.title_bar = QWidget()
         self.title_bar.setObjectName("TitleBar")
         self.title_bar.setFixedHeight(40)
@@ -107,7 +98,6 @@ class BuilderWindow(QMainWindow):
         title_bar_layout.addWidget(title_label)
         title_bar_layout.addStretch()
 
-        # Window controls
         self.minimize_btn = QPushButton("—")
         self.maximize_btn = QPushButton("□")
         self.close_btn = QPushButton("✕")
@@ -125,7 +115,6 @@ class BuilderWindow(QMainWindow):
         
         main_layout.addWidget(self.title_bar)
 
-        # Builder Page
         self.builder_page = BuilderPage(mock_main, self)
         main_layout.addWidget(self.builder_page)
         
