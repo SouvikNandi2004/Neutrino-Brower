@@ -2955,13 +2955,13 @@ class TorBrowser(QMainWindow):
         if index == -1:
             return
 
-        # The tab button is on the tab bar, which is inside the tab_widget
+        # Place audio indicator on LeftSide so it does not conflict with the RightSide close button
         tab_bar = self.tab_widget.tab_bar
-        existing_button = tab_bar.tabButton(index, QTabBar.ButtonPosition.RightSide)
+        existing_button = tab_bar.tabButton(index, QTabBar.ButtonPosition.LeftSide)
 
         if not is_audible:
             if existing_button:
-                tab_bar.setTabButton(index, QTabBar.ButtonPosition.RightSide, None)
+                tab_bar.setTabButton(index, QTabBar.ButtonPosition.LeftSide, None)
                 existing_button.deleteLater()
             return
 
@@ -2970,15 +2970,16 @@ class TorBrowser(QMainWindow):
             button = QPushButton()
             button.setObjectName("AudioIndicatorBtn")
             button.setFlat(True)
+            button.setCursor(Qt.CursorShape.PointingHandCursor)
             button.clicked.connect(sender_browser.toggle_mute)
-            tab_bar.setTabButton(index, QTabBar.ButtonPosition.RightSide, button)
+            tab_bar.setTabButton(index, QTabBar.ButtonPosition.LeftSide, button)
 
         icon_color = self.theme["ICON_COLOR"]
         if is_muted:
-            button.setIcon(create_icon_from_svg(SVG_ICONS["audio_muted"], icon_color, QSize(16, 16)))
+            button.setIcon(create_icon_from_svg(SVG_ICONS["audio_muted"], icon_color, QSize(14, 14)))
             button.setToolTip("Unmute Tab")
         else:
-            button.setIcon(create_icon_from_svg(SVG_ICONS["audio_playing"], icon_color, QSize(16, 16)))
+            button.setIcon(create_icon_from_svg(SVG_ICONS["audio_playing"], icon_color, QSize(14, 14)))
             button.setToolTip("Mute Tab")
 
     def show_find_bar(self):

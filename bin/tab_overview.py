@@ -50,9 +50,13 @@ class TabThumbnail(QWidget):
         self.title_edit.setCursor(Qt.CursorShape.PointingHandCursor)
 
         self.close_btn = QPushButton()
-        self.close_btn.setIcon(create_icon_from_svg(SVG_ICONS['close'], self.theme['TAB_TEXT_COLOR']))
         self.close_btn.setObjectName("ThumbnailCloseBtn")
+        self.close_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.close_btn.setToolTip("Close Tab")
+        self.close_btn.setIcon(create_icon_from_svg(SVG_ICONS['close'], self.theme['TAB_TEXT_COLOR']))
         self.close_btn.clicked.connect(self._on_close)
+        self.close_btn.enterEvent = lambda e: self.close_btn.setIcon(create_icon_from_svg(SVG_ICONS['close'], "#ffffff"))
+        self.close_btn.leaveEvent = lambda e: self.close_btn.setIcon(create_icon_from_svg(SVG_ICONS['close'], self.theme['TAB_TEXT_COLOR']))
         
         header_layout.addWidget(self.title_edit)
         header_layout.addStretch()
@@ -95,7 +99,6 @@ class TabThumbnail(QWidget):
             }}
             #ThumbnailCloseBtn {{
                 background: transparent;
-                color: {self.theme['TAB_TEXT_COLOR']};
                 border: none;
                 border-radius: 12px; /* circular */
                 padding: 4px;
@@ -106,7 +109,9 @@ class TabThumbnail(QWidget):
             }}
             #ThumbnailCloseBtn:hover {{
                 background-color: {self.theme['DANGER_COLOR']};
-                color: white;
+            }}
+            #ThumbnailCloseBtn:pressed {{
+                background-color: #b91c1c;
             }}
         """)
 

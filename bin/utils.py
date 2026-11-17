@@ -330,6 +330,32 @@ def get_profile_path():
     os.makedirs(profile_path, exist_ok=True)
     return profile_path
 
+def get_cached_icon_path(icon_name, color):
+    """
+    Renders SVG data to an on-disk SVG file in profile cache and returns its
+    normalized forward-slash path so Qt's QSS engine (url(...)) can load it directly.
+    """
+    profile_path = get_profile_path()
+    cache_dir = os.path.join(profile_path, "icon_cache")
+    try:
+        os.makedirs(cache_dir, exist_ok=True)
+    except Exception:
+        pass
+
+    safe_color = str(color).replace("#", "").replace("(", "_").replace(")", "_").replace(",", "_").replace(" ", "_").replace(".", "_")
+    filename = f"{icon_name}_{safe_color}.svg"
+    file_path = os.path.join(cache_dir, filename)
+
+    if not os.path.exists(file_path):
+        if icon_name in SVG_ICONS:
+            svg_content = SVG_ICONS[icon_name].replace("currentColor", color)
+            try:
+                with open(file_path, "w", encoding="utf-8") as f:
+                    f.write(svg_content)
+            except Exception:
+                pass
+    return file_path.replace("\\", "/")
+
 # Start Tor in the background
 def start_tor(tor_executable_path=None, config_file_path=None):
     # Set creationflags to hide console window on Windows

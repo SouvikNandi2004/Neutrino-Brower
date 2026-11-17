@@ -102,6 +102,12 @@ class TorBrowser(QMainWindow):
             QApplication.instance().quit()
             return  # Prevent further initialization
 
+        from bin.utils import get_cached_icon_path
+        close_icon_path = get_cached_icon_path("close", "#ffffff")
+        back_icon_path = get_cached_icon_path("back", "#ffffff")
+        forward_icon_path = get_cached_icon_path("forward", "#ffffff")
+        back_disabled_path = get_cached_icon_path("back", "#666666")
+
         self.setStyleSheet(f"""
             #MainWindow, #TitleBarWidget {{
                 background-color: {self.BG_COLOR};
@@ -196,13 +202,13 @@ class TorBrowser(QMainWindow):
                 background-color: rgba(255, 255, 255, 0.1);
             }}
             QTabBar::left-arrow {{
-                image: url('data:image/svg+xml,{urllib.parse.quote(SVG_ICONS["back"].replace("currentColor", "white"))}');
+                image: url('{back_icon_path}');
             }}
             QTabBar::right-arrow {{
-                image: url('data:image/svg+xml,{urllib.parse.quote(SVG_ICONS["forward"].replace("currentColor", "white"))}');
+                image: url('{forward_icon_path}');
             }}
             QTabBar::left-arrow:disabled, QTabBar::right-arrow:disabled {{
-                image: url('data:image/svg+xml,{urllib.parse.quote(SVG_ICONS["back"].replace("currentColor", "#666"))}');
+                image: url('{back_disabled_path}');
             }}
 
             QTabBar::tab {{
@@ -244,13 +250,15 @@ class TorBrowser(QMainWindow):
                 background-color: #e81123;
             }}
             QTabBar::close-button {{
-                image: url('data:image/svg+xml,%3csvg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="white" viewBox="0 0 16 16"%3e%3cpath d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"/%3e%3c/svg%3e');
+                image: url('{close_icon_path}');
                 subcontrol-position: right;
                 subcontrol-origin: padding;
-                margin: 2px;
-                background-color: transparent; /* Ensure button is always rendered */
-                padding: 2px;
-                border-radius: 4px;
+                margin-right: 6px;
+                width: 14px;
+                height: 14px;
+                background-color: transparent;
+                padding: 3px;
+                border-radius: 10px;
             }}
             QTabBar::close-button:hover {{
                 background-color: {self.DANGER_COLOR}; /* Red background on hover */

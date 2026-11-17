@@ -72,6 +72,13 @@ class TabWidget(QWidget):
         accent_color = getattr(self.parent(), "ACCENT_COLOR", "#3b82f6") if self.parent() else "#3b82f6"
         icon_color = self.theme["ICON_COLOR"]
 
+        from bin.utils import get_cached_icon_path
+        close_idle_path = get_cached_icon_path("close", self.theme.get("TAB_TEXT_COLOR", "#94a3b8"))
+        close_selected_path = get_cached_icon_path("close", self.theme.get("TAB_TEXT_SELECTED_COLOR", "#ffffff"))
+        close_hover_path = get_cached_icon_path("close", "#ffffff")
+        left_arrow_path = get_cached_icon_path("back", icon_color)
+        right_arrow_path = get_cached_icon_path("forward", icon_color)
+
         if self.style_mode == "modern":
             self.setStyleSheet(f"""
                 #ContentStack {{
@@ -117,15 +124,19 @@ class TabWidget(QWidget):
                     background-color: {self.theme["TAB_HOVER_COLOR"]};
                 }}
                 QTabBar::left-arrow {{
-                    image: url('data:image/svg+xml,{urllib.parse.quote(SVG_ICONS["back"].replace("currentColor", icon_color))}');
+                    image: url('{left_arrow_path}');
+                    width: 14px;
+                    height: 14px;
                 }}
                 QTabBar::right-arrow {{
-                    image: url('data:image/svg+xml,{urllib.parse.quote(SVG_ICONS["forward"].replace("currentColor", icon_color))}');
+                    image: url('{right_arrow_path}');
+                    width: 14px;
+                    height: 14px;
                 }}
                 QTabBar::tab {{
                     background: rgba(255, 255, 255, 0.04);
                     color: {self.theme["TAB_TEXT_COLOR"]};
-                    padding: 6px 14px;
+                    padding: 6px 30px 6px 14px;
                     border: 1px solid rgba(255, 255, 255, 0.05);
                     border-radius: 8px;
                     margin: 4px 3px 4px 3px;
@@ -145,22 +156,34 @@ class TabWidget(QWidget):
                     border-bottom: 2px solid {accent_color};
                 }}
                 QTabBar::close-button {{
-                    image: url('data:image/svg+xml,{urllib.parse.quote(SVG_ICONS["close"].replace("currentColor", self.theme["TAB_TEXT_COLOR"]))}');
+                    image: url('{close_idle_path}');
                     subcontrol-position: right;
                     subcontrol-origin: padding;
-                    margin: 2px;
-                    background-color: transparent;
+                    margin-right: 6px;
+                    width: 14px;
+                    height: 14px;
                     padding: 3px;
-                    border-radius: 7px;
+                    border-radius: 10px;
+                    background-color: transparent;
                 }}
                 QTabBar::close-button:selected {{
-                    image: url('data:image/svg+xml,{urllib.parse.quote(SVG_ICONS["close"].replace("currentColor", self.theme["TAB_TEXT_SELECTED_COLOR"]))}');
+                    image: url('{close_selected_path}');
                 }}
                 QTabBar::close-button:hover {{
                     background-color: {self.theme["DANGER_COLOR"]};
-                    image: url('data:image/svg+xml,{urllib.parse.quote(SVG_ICONS["close"].replace("currentColor", "#ffffff"))}');
+                    image: url('{close_hover_path}');
+                }}
+                QTabBar::close-button:pressed {{
+                    background-color: #b91c1c;
+                    image: url('{close_hover_path}');
                 }}
             """)
+
+        for i in range(self.tab_bar.count()):
+            btn = self.tab_bar.tabButton(i, QTabBar.ButtonPosition.RightSide)
+            if btn:
+                btn.setCursor(Qt.CursorShape.PointingHandCursor)
+                btn.setToolTip("Close Tab (Ctrl+W)")
 
     def add_tab(self, widget, title, icon=None):
         index = self.stacked_widget.addWidget(widget)
@@ -170,6 +193,12 @@ class TabWidget(QWidget):
         else:
             self.tab_bar.setTabIcon(tab_index, QIcon()) # Placeholder
         self.tab_bar.setCurrentIndex(tab_index)
+
+        btn = self.tab_bar.tabButton(tab_index, QTabBar.ButtonPosition.RightSide)
+        if btn:
+            btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            btn.setToolTip("Close Tab (Ctrl+W)")
+
         return tab_index
 
     def remove_tab(self, index):

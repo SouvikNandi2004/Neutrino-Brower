@@ -214,7 +214,10 @@ class PrivacyShieldInterceptor(QWebEngineUrlRequestInterceptor):
                     for rule in sorted(self.rules):
                         f.write(rule + '\n')
                 print(f"PrivacyShield: Successfully refreshed {len(self.rules)} rules.")
-                self.signals.rules_updated.emit(len(self.rules))
+                try:
+                    self.signals.rules_updated.emit(len(self.rules))
+                except RuntimeError:
+                    pass
         except Exception as e:
             print(f"PrivacyShield: Remote update failed: {e}")
 
