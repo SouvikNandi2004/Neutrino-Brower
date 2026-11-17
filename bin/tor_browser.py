@@ -369,13 +369,13 @@ class TorBrowser(QMainWindow):
         self.setMinimumSize(600, 400) # Set a reasonable minimum size
         # --- Theme Colors ---
         self.load_themes()
-        settings = QSettings("Neutrino", "Browser")
-        if not settings.contains("theme"):
-            legacy_settings = QSettings("DisunicX", "Browser")
-            if legacy_settings.contains("theme"):
-                settings = legacy_settings
-        self.tab_style = "modern" if settings.value("tab_style", 0, type=int) == 0 else "classic"
-        self.theme_name = settings.value("theme", "dark", type=str)
+        self.settings = QSettings("Neutrino", "Browser")
+        legacy_settings = QSettings("DisunicX", "Browser")
+        for key in legacy_settings.allKeys():
+            if not self.settings.contains(key):
+                self.settings.setValue(key, legacy_settings.value(key))
+        self.tab_style = "modern" if self.settings.value("tab_style", 0, type=int) == 0 else "classic"
+        self.theme_name = self.settings.value("theme", "dark", type=str)
         # Ensure theme_name is valid, otherwise default to "dark"
         if self.theme_name not in self.THEMES:
             self.theme_name = "dark" if "dark" in self.THEMES else list(self.THEMES.keys())[0]
@@ -780,7 +780,7 @@ class TorBrowser(QMainWindow):
 
     def get_new_tab_html(self):
         """Generates the HTML for the modern new tab page with a background image and customization sidebar."""
-        settings = QSettings("DisunicX", "Browser")
+        settings = self.settings
         search_engine = settings.value("search_engine", "DuckDuckGo")
         theme = self.THEMES.get(self.theme_name, self.THEMES["dark"])
 
@@ -2108,7 +2108,7 @@ class TorBrowser(QMainWindow):
                 event.ignore()
         else:
             # --- Session Saving Logic ---
-            settings = QSettings("DisunicX", "Browser")
+            settings = self.settings
             startup_behavior = settings.value("startup_behavior", 0, type=int)
             if startup_behavior == 1: # "Continue where you left off"
                 urls_to_save = []
@@ -2117,7 +2117,7 @@ class TorBrowser(QMainWindow):
                     if isinstance(widget, BrowserTab):
                         url = widget.url().toString()
                         # Don't save internal or blank pages
-                        if not url.startswith(("disunic:", "about:")):
+                        if not url.startswith(("disunic:", "about:", "neutrino:")):
                             urls_to_save.append(url)
                 settings.setValue("last_session_urls", urls_to_save)
             else:
@@ -2132,7 +2132,7 @@ class TorBrowser(QMainWindow):
 
     def add_initial_tabs(self):
         """Adds the initial tabs on startup based on user settings."""
-        settings = QSettings("DisunicX", "Browser")
+        settings = self.settings
         startup_behavior = settings.value("startup_behavior", 0, type=int)
 
         if startup_behavior == 1: # Continue where you left off
@@ -2155,7 +2155,7 @@ class TorBrowser(QMainWindow):
             self.add_new_tab()
 
     def set_tor_proxy(self):
-        settings = QSettings("DisunicX", "Browser")
+        settings = self.settings
         
         # Tor is not supported on macOS in this version.
         if sys.platform == "darwin":
@@ -2284,11 +2284,11 @@ class TorBrowser(QMainWindow):
         else:
             self.bookmarks_bar.hide_animated()
         
-        settings = QSettings("DisunicX", "Browser")
+        settings = self.settings
         settings.setValue("show_bookmarks_bar", show)
 
     def load_bookmarks_bar_visibility(self):
-        settings = QSettings("DisunicX", "Browser")
+        settings = self.settings
         is_visible = settings.value("show_bookmarks_bar", False, type=bool)
         if is_visible:
             # If it should be visible, ensure its height is not 0.
@@ -2407,7 +2407,7 @@ class TorBrowser(QMainWindow):
             {"text": "Save Page as PDF...", "handler": self.handle_print_action, "icon": "save_pdf"},
             None,
             {"text": "Settings", "handler": self.open_settings, "icon": "settings_general"},
-            {"text": "About DisunicX", "handler": self.show_about, "icon": "info"},
+            {"text": "About Neutrino Browser", "handler": self.show_about, "icon": "info"},
             {"text": "Clear Browsing Data", "handler": self.clear_browsing_data, "icon": "clear_data", "color": self.DANGER_COLOR},
             None,
             {"text": "Exit", "handler": self.close, "icon": "close"}
@@ -3093,7 +3093,7 @@ class TorBrowser(QMainWindow):
             self.tor_status_widget.hide()
             return
 
-        settings = QSettings("DisunicX", "Browser")
+        settings = self.settings
         if settings.value("use_proxy", True, type=bool) and sys.platform != "darwin":
             is_onion = url.host().endswith(".onion")
             if is_onion:
@@ -3136,10 +3136,10 @@ class TorBrowser(QMainWindow):
 
     def navigate_to_url(self):
         url = self.url_bar.url_edit.text().strip()
-        settings = QSettings("DisunicX", "Browser")
+        settings = self.settings
         search_engine = settings.value("search_engine", "DuckDuckGo")
         
-        if url.lower() == "disunic://settings":
+        if url.lower() in ("disunic://settings", "neutrino://settings"):
             self.open_settings()
             return
         
@@ -3228,7 +3228,7 @@ class TorBrowser(QMainWindow):
         self.updater.check_for_updates(force_check=force_check)
     
     def show_welcome_if_first_time(self):
-        settings = QSettings("DisunicX", "Browser")
+        settings = self.settings
         if not settings.value("terms_accepted", False, type=bool):
             dialog = WelcomeDialog(self)
             result = dialog.exec()
