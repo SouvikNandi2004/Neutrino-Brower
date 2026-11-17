@@ -1,6 +1,13 @@
 import sqlite3
 import os
 from datetime import datetime
+
+if __package__ is None or __package__ == "":
+    import sys
+    _p = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
+
 from bin.utils import get_profile_path
 
 class BookmarksManager:

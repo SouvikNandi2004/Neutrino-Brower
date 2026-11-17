@@ -12,6 +12,15 @@ import sys
 import subprocess
 import tempfile
 import shutil
+# Ensure the project root directory is in sys.path when executed directly
+_current_dir = os.path.dirname(os.path.abspath(__file__))
+_parent_dir = os.path.dirname(_current_dir)
+if _parent_dir not in sys.path:
+    sys.path.insert(0, _parent_dir)
+if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+    if sys._MEIPASS not in sys.path:
+        sys.path.insert(0, sys._MEIPASS)
+
 from PyQt6.QtWidgets import (
     QVBoxLayout, QWidget, QGridLayout, QTextEdit,
     QLineEdit, QPushButton, QHBoxLayout, QLabel, QStackedWidget, QTabWidget,
@@ -304,7 +313,7 @@ class BuilderPage(QWidget):
         info_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         info_label.setWordWrap(True)
         command_label = QLabel("Please install it by opening a command prompt or terminal and running:\n<b>pip install pyinstaller</b>")
-        command_label.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        command_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         command_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         command_label.setObjectName("CommandLabel")
         retry_btn = QPushButton("I've installed it, check again")
@@ -605,3 +614,30 @@ class BuilderPage(QWidget):
         self.ssb_app_url = None
         self.ssb_icon_path = None
         self.ssb_output_dir = None
+
+
+class StandaloneWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.ACCENT_COLOR = "#007acc"
+        self.DANGER_COLOR = "#e74c3c"
+        self.SECURE_COLOR = "#2ecc71"
+        self.THEMES = {
+            "dark": {
+                "TOOLBAR_COLOR": "#1f1f23", "TEXT_COLOR": "#efeff1", "BORDER_COLOR": "#303036",
+                "TAB_TEXT_COLOR": "#adadb8", "TAB_HOVER_COLOR": "#2d2d34", "URL_BAR_BG": "#26262c",
+                "ICON_COLOR": "#efeff1", "BUTTON_HOVER_COLOR": "#3a3a44", "BG_COLOR": "#18181b",
+                "CONTENT_BG_COLOR": "#18181b", "MSGBOX_BUTTON_BG": "#2d2d34"
+            }
+        }
+        self.theme = self.THEMES["dark"]
+
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = StandaloneWindow()
+    builder = BuilderPage(window)
+    builder.setWindowTitle("Neutrino Application Builder")
+    builder.resize(900, 650)
+    builder.show()
+    sys.exit(app.exec())

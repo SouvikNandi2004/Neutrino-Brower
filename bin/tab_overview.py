@@ -5,6 +5,12 @@
 # Permission is granted to use, copy, modify, and distribute this software for any purpose with or without fee, provided the copyright notice appears in all copies.
 #
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
+if __package__ is None or __package__ == "":
+    import os, sys
+    _p = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
+
 from bin.utils import create_icon_from_svg, SVG_ICONS
 from PyQt6.QtWidgets import QWidget, QScrollArea, QGridLayout, QLabel, QVBoxLayout, QPushButton, QFrame, QHBoxLayout, QGraphicsDropShadowEffect, QLineEdit
 from PyQt6.QtCore import Qt, QSize, pyqtSignal, QMimeData, QPoint

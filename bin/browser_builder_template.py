@@ -16,11 +16,17 @@ from datetime import datetime
 import html
 import urllib.parse
 
-# If the app is frozen, add the bundled 'bin' directory to the Python path
-# so that its modules can be imported.
-if getattr(sys, 'frozen', False):
-    # The resource_path function needs to find the 'bin' directory.
-    sys.path.insert(0, os.path.join(sys._MEIPASS, 'bin'))
+# Ensure parent directory is in sys.path when executed directly or frozen
+_current_dir = os.path.dirname(os.path.abspath(__file__))
+_parent_dir = os.path.dirname(_current_dir)
+if _parent_dir not in sys.path:
+    sys.path.insert(0, _parent_dir)
+if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+    if sys._MEIPASS not in sys.path:
+        sys.path.insert(0, sys._MEIPASS)
+    bin_path = os.path.join(sys._MEIPASS, 'bin')
+    if bin_path not in sys.path:
+        sys.path.insert(0, bin_path)
 
 from bin.tor_browser import TorBrowser
 from bin.utils import start_tor, SVG_ICONS, resource_path

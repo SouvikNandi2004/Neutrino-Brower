@@ -5,6 +5,12 @@ from PyQt6.QtWidgets import (
     QWidget, QHBoxLayout, QTabBar, QStackedWidget, QPushButton, QSizePolicy
 )
 from PyQt6.QtGui import QIcon
+
+if __package__ is None or __package__ == "":
+    _p = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
+
 from bin.utils import SVG_ICONS
 
 class TabWidget(QWidget):

@@ -1,6 +1,13 @@
 from PyQt6.QtWidgets import QToolBar, QPushButton, QWidget, QMenu, QFrame
 from PyQt6.QtCore import QSize, pyqtSignal, Qt, QEvent, QMimeData, QPropertyAnimation, QEasingCurve
 from PyQt6.QtGui import QAction, QDrag
+
+if __package__ is None or __package__ == "":
+    import os, sys
+    _p = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
+
 from bin.utils import create_icon_from_svg, SVG_ICONS, base64_to_qicon
 from PyQt6.QtWidgets import QApplication
 

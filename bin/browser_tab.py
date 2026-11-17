@@ -20,6 +20,13 @@ from PyQt6.QtCore import QStandardPaths, QSettings
 # Import TorBrowser class for type hinting and creating new windows.
 # Use a forward declaration style to avoid circular imports at runtime.
 from typing import TYPE_CHECKING
+
+if __package__ is None or __package__ == "":
+    import os, sys
+    _p = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
+
 from bin.utils import create_icon_from_svg, SVG_ICONS, DraggableFramelessDialog, CustomMessageBox
 
 class JavaScriptPromptDialog(DraggableFramelessDialog):

@@ -1,5 +1,12 @@
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QLineEdit, QPushButton, QLabel
 from PyQt6.QtCore import pyqtSignal, Qt, QPropertyAnimation, QEasingCurve
+
+if __package__ is None or __package__ == "":
+    import os, sys
+    _p = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
+
 from bin.utils import create_icon_from_svg, SVG_ICONS
 
 class FindBar(QWidget):

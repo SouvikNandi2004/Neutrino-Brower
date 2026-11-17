@@ -26,6 +26,13 @@ from PyQt6.QtWebEngineCore import QWebEngineProfile, QWebEnginePage
 from PyQt6.QtWebChannel import QWebChannel
 from PyQt6.QtPrintSupport import QPrinter, QPrintDialog
 from PyQt6.QtNetwork import QNetworkProxy
+
+if __package__ is None or __package__ == "":
+    import os, sys
+    _p = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
+
 from bin.browser_tab import BrowserTab
 from bin.download_manager import DownloadManagerPage
 from bin.settings_page import SettingsPage

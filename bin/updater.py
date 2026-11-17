@@ -16,6 +16,13 @@ from PyQt6.QtGui import QDesktopServices
 from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
 import os
 import re
+
+if __package__ is None or __package__ == "":
+    import sys
+    _p = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
+
 from bin.utils import create_icon_from_svg, SVG_ICONS, DraggableFramelessDialog
 
 # IMPORTANT: Replace with your actual GitHub repository details

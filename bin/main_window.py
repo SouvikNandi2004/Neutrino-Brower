@@ -22,12 +22,25 @@ from PyQt6.QtWebEngineCore import QWebEngineProfile, QWebEnginePage
 from PyQt6.QtWebChannel import QWebChannel
 from PyQt6.QtPrintSupport import QPrinter, QPrintDialog
 from PyQt6.QtNetwork import QNetworkProxy
-from browser_tab import BrowserTab
-from download_manager import DownloadManagerPage
-from settings_page import SettingsPage
-from history_manager import HistoryManager
-from .updater import Updater
-from .utils import get_profile_path, SVG_ICONS, create_icon_from_svg, qicon_to_base64
+
+if __package__ is None or __package__ == "":
+    import os, sys
+    _p = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
+    from bin.browser_tab import BrowserTab
+    from bin.download_manager import DownloadManagerPage
+    from bin.settings_page import SettingsPage
+    from bin.history_manager import HistoryManager
+    from bin.updater import Updater
+    from bin.utils import get_profile_path, SVG_ICONS, create_icon_from_svg, qicon_to_base64
+else:
+    from bin.browser_tab import BrowserTab
+    from bin.download_manager import DownloadManagerPage
+    from bin.settings_page import SettingsPage
+    from bin.history_manager import HistoryManager
+    from bin.updater import Updater
+    from bin.utils import get_profile_path, SVG_ICONS, create_icon_from_svg, qicon_to_base64
 from .url_bar import UrlBar
 
 # Global reference to main window
