@@ -1,5 +1,10 @@
 # Neutrino Browser
 
+> [!CAUTION]
+> **No Pre-Built Releases Available**
+>
+> This browser currently does not have any pre-compiled releases or installer downloads. You can clone or download the source code and run it directly with Python, or build your own standalone executable (`.exe` on Windows or native binaries for other supported platforms) using PyInstaller or the included `build.bat` script.
+
 A high-performance, privacy-focused desktop web browser built with Python and PyQt6, powered by Chromium (QtWebEngine) with native Tor network routing and modular components engineered for both Neutrino Browser and Qelaro Browser.
 
 Fast. Secure. Anonymous. Customizable.
