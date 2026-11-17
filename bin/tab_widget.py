@@ -69,15 +69,17 @@ class TabWidget(QWidget):
             tab_margin = "4px 2px 0 2px"
             tab_border_radius = "6px 6px 0 0"
 
+        accent_color = getattr(self.parent(), "ACCENT_COLOR", "#3b82f6") if self.parent() else "#3b82f6"
+        icon_color = self.theme["ICON_COLOR"]
+
         if self.style_mode == "modern":
             self.setStyleSheet(f"""
                 #ContentStack {{
                     background: {self.theme["BG_COLOR"]};
-                    border: none; /* The border is now on the title bar */
+                    border: none;
                 }}
             """)
-        else: # classic
-            icon_color = self.theme["ICON_COLOR"]
+        else: # classic top tab bar
             self.setStyleSheet(f"""
                 #ContentStack {{
                     background: {self.theme["BG_COLOR"]};
@@ -87,18 +89,22 @@ class TabWidget(QWidget):
                     background: transparent;
                     border: none;
                     margin-left: 8px;
+                    qproperty-drawBase: 0;
                 }}
                 #NewTabBtn {{
-                    background-color: transparent;
+                    background-color: rgba(255, 255, 255, 0.04);
                     color: {icon_color};
-                    border: none;
-                    border-radius: 6px;
-                    padding: 6px 8px;
-                    margin: 8px 4px 0 4px; /* Align vertically with new tabs */
-                    font-size: 18px;
+                    border: 1px solid rgba(255, 255, 255, 0.06);
+                    border-radius: 8px;
+                    padding: 4px 8px;
+                    margin: 4px 4px 4px 4px;
+                    font-size: 16px;
+                    font-weight: 600;
                 }}
                 #NewTabBtn:hover {{
-                    background-color: {self.theme["TAB_HOVER_COLOR"]};
+                    background-color: {self.theme["BUTTON_HOVER_COLOR"]};
+                    border-color: {accent_color};
+                    color: {self.theme["TEXT_COLOR"]};
                 }}
                 QTabBar::scroller QPushButton {{
                     background-color: transparent;
@@ -117,25 +123,26 @@ class TabWidget(QWidget):
                     image: url('data:image/svg+xml,{urllib.parse.quote(SVG_ICONS["forward"].replace("currentColor", icon_color))}');
                 }}
                 QTabBar::tab {{
-                    background: {self.theme["TAB_HOVER_COLOR"]};
+                    background: rgba(255, 255, 255, 0.04);
                     color: {self.theme["TAB_TEXT_COLOR"]};
-                    padding: 8px 16px;
-                    border: none;
-                    border-radius: {tab_border_radius};
-                    margin: {tab_margin};
+                    padding: 6px 14px;
+                    border: 1px solid rgba(255, 255, 255, 0.05);
+                    border-radius: 8px;
+                    margin: 4px 3px 4px 3px;
                     min-width: 100px;
-                    max-width: 200px;
-                    border-bottom: 1px solid transparent;
+                    max-width: 220px;
                 }}
                 QTabBar::tab:!selected:hover {{
                     background: {self.theme["BUTTON_HOVER_COLOR"]};
                     color: {self.theme["TEXT_COLOR"]};
+                    border-color: rgba(255, 255, 255, 0.12);
                 }}
                 QTabBar::tab:selected {{
                     background: {self.theme["TAB_ACTIVE_COLOR"]};
                     color: {self.theme["TAB_TEXT_SELECTED_COLOR"]};
-                    font-weight: 700;
-                    border-bottom: 1px solid {self.theme["TAB_ACTIVE_COLOR"]};
+                    font-weight: 600;
+                    border: 1px solid rgba(255, 255, 255, 0.12);
+                    border-bottom: 2px solid {accent_color};
                 }}
                 QTabBar::close-button {{
                     image: url('data:image/svg+xml,{urllib.parse.quote(SVG_ICONS["close"].replace("currentColor", self.theme["TAB_TEXT_COLOR"]))}');
@@ -143,8 +150,8 @@ class TabWidget(QWidget):
                     subcontrol-origin: padding;
                     margin: 2px;
                     background-color: transparent;
-                    padding: 2px;
-                    border-radius: 4px;
+                    padding: 3px;
+                    border-radius: 7px;
                 }}
                 QTabBar::close-button:selected {{
                     image: url('data:image/svg+xml,{urllib.parse.quote(SVG_ICONS["close"].replace("currentColor", self.theme["TAB_TEXT_SELECTED_COLOR"]))}');

@@ -80,7 +80,7 @@ class NotesSidebarWidget(QWidget):
         self.close_btn.setObjectName("NotesCloseBtn")
         self.close_btn.setFixedSize(24, 24)
         self.close_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.close_btn.clicked.connect(self.hide)
+        self.close_btn.clicked.connect(lambda: getattr(self.main_window, 'toggle_notes_sidebar', self.hide)())
 
         header_layout.addWidget(title_label)
         header_layout.addStretch()

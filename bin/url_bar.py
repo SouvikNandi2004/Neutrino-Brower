@@ -32,6 +32,7 @@ class UrlBar(QWidget):
         self.security_icon = QPushButton()
         self.security_icon.setObjectName("UrlBarButton")
         self.security_icon.setFlat(True)
+        self.security_icon.setCursor(Qt.CursorShape.PointingHandCursor)
         
         self.url_edit = QLineEdit()
         self.url_edit.setObjectName("UrlEdit")
@@ -43,11 +44,13 @@ class UrlBar(QWidget):
         self.bookmark_button.setObjectName("UrlBarButton")
         self.bookmark_button.setFlat(True)
         self.bookmark_button.setCheckable(True)
+        self.bookmark_button.setCursor(Qt.CursorShape.PointingHandCursor)
         self.bookmark_button.clicked.connect(self.bookmarkButtonClicked)
         
         self.reader_button = QPushButton()
         self.reader_button.setObjectName("UrlBarButton")
         self.reader_button.setFlat(True)
+        self.reader_button.setCursor(Qt.CursorShape.PointingHandCursor)
         self.reader_button.setToolTip("Toggle Reader Mode (Ctrl+Alt+R)")
         self.reader_button.setIcon(create_icon_from_svg(SVG_ICONS["reader_mode"], self.theme["ICON_COLOR"]))
         self.reader_button.clicked.connect(self.readerButtonClicked)
@@ -158,8 +161,7 @@ class UrlBar(QWidget):
 
     def paintEvent(self, event):
         """
-        Custom paint event to draw a perfectly rounded pill shape.
-        This gives us more control than stylesheets alone for complex shapes.
+        Custom paint event to draw a perfectly rounded pill shape with smooth glow.
         """
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -167,14 +169,25 @@ class UrlBar(QWidget):
         # Determine colors based on theme and focus state
         bg_color = QColor(self.theme["URL_BAR_BG"])
         border_color = QColor(self.theme["URL_BAR_BORDER"])
-        if self.property("hasFocus"):
-            border_color = QColor(self.main_window.ACCENT_COLOR)
+        has_focus = self.property("hasFocus")
 
-        # Draw the rounded rectangle (pill shape)
+        accent_color_str = getattr(self.main_window, "ACCENT_COLOR", "#3b82f6") if self.main_window else "#3b82f6"
+        if has_focus:
+            border_color = QColor(accent_color_str)
+
         rect = self.rect().adjusted(1, 1, -1, -1) # Adjust for the border
         radius = rect.height() / 2.0
+
+        # Draw soft glowing outer ring when focused
+        if has_focus:
+            glow = QColor(accent_color_str)
+            glow.setAlpha(40)
+            painter.setBrush(Qt.BrushStyle.NoBrush)
+            painter.setPen(QPen(glow, 4.0))
+            painter.drawRoundedRect(rect, radius, radius)
+
         painter.setBrush(QBrush(bg_color))
-        painter.setPen(QPen(border_color, 1.5)) # Use a slightly thicker pen for a crisper look
+        painter.setPen(QPen(border_color, 1.8 if has_focus else 1.2))
         painter.drawRoundedRect(rect, radius, radius)
 
     def setUrl(self, url: QUrl, secure_color="#2ecc71", insecure_color="#e74c3c"):

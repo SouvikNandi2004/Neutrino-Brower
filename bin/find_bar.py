@@ -47,8 +47,8 @@ class FindBar(QWidget):
         layout.addWidget(self.close_btn)
 
         self.animation = QPropertyAnimation(self, b"maximumHeight")
-        self.animation.setDuration(150)
-        self.animation.setEasingCurve(QEasingCurve.Type.InOutQuad)
+        self.animation.setDuration(180)
+        self.animation.setEasingCurve(QEasingCurve.Type.InOutCubic)
 
         self.apply_stylesheet()
 
@@ -63,8 +63,9 @@ class FindBar(QWidget):
                 background-color: {self.theme['URL_BAR_BG']};
                 color: {self.theme['TEXT_COLOR']};
                 border: 1px solid {self.theme['BORDER_COLOR']};
-                border-radius: 4px;
-                padding: 4px 8px;
+                border-radius: 6px;
+                padding: 4px 10px;
+                font-size: 13px;
             }}
             #FindBar QLineEdit:focus {{
                 border-color: {accent_color};
@@ -72,12 +73,13 @@ class FindBar(QWidget):
             #FindBar QLabel {{
                 color: {self.theme['TAB_TEXT_COLOR']};
                 font-size: 12px;
+                padding: 0 4px;
             }}
             #FindBar QPushButton {{
                 background-color: transparent;
                 border: none;
-                border-radius: 4px;
-                padding: 4px;
+                border-radius: 6px;
+                padding: 4px 6px;
             }}
             #FindBar QPushButton:hover {{
                 background-color: {self.theme['BUTTON_HOVER_COLOR']};

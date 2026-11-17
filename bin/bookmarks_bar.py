@@ -21,8 +21,8 @@ class BookmarksBar(QToolBar):
         self.setVisible(False)
         self.setMaximumHeight(0)
         self._animation = QPropertyAnimation(self, b"maximumHeight")
-        self._animation.setDuration(200)
-        self._animation.setEasingCurve(QEasingCurve.Type.InOutQuad)
+        self._animation.setDuration(220)
+        self._animation.setEasingCurve(QEasingCurve.Type.InOutCubic)
         self.setMovable(False)
         self.setIconSize(QSize(16, 16))
 

@@ -19,7 +19,7 @@ from PyQt6.QtCore import QUrl, Qt, QSettings, QPoint, QSize, QEvent, QObject, py
 from PyQt6.QtWidgets import (
     QMainWindow, QLineEdit, QToolBar, QPushButton, QMenu, QApplication, QFrame,
     QMessageBox, QVBoxLayout, QLabel, QListWidget, QDialogButtonBox, QDialog, QStyle, QListWidgetItem, QWidget, QHBoxLayout, QScrollArea,
-    QCheckBox, QTabBar, QStackedWidget, QFileDialog 
+    QCheckBox, QTabBar, QStackedWidget, QFileDialog, QProgressBar
 )
 from PyQt6.QtGui import QAction, QIcon, QMouseEvent, QCloseEvent, QKeySequence, QShortcut, QPixmap, QPainter, QPainterPath, QColor
 from PyQt6.QtWebEngineCore import QWebEngineProfile, QWebEnginePage
@@ -535,16 +535,30 @@ class TorBrowser(QMainWindow):
         self.content_layout.addWidget(self.notes_sidebar)
         self.notes_sidebar.hide()
 
+        # Slim loading progress bar
+        self.page_progress_bar = QProgressBar(self)
+        self.page_progress_bar.setObjectName("PageProgressBar")
+        self.page_progress_bar.setFixedHeight(2)
+        self.page_progress_bar.setTextVisible(False)
+        self.page_progress_bar.setRange(0, 100)
+        self.page_progress_bar.hide()
+
         # Add widgets to main layout in the correct order
         main_layout.addWidget(self.title_bar_widget) # Contains tabs (classic) or toolbar (modern)
         if self.tab_style == "classic":
             main_layout.addWidget(self.toolbar) # Toolbar is separate in classic mode
 
+        main_layout.addWidget(self.page_progress_bar)
         main_layout.addWidget(self.bookmarks_bar)
         main_layout.addWidget(self.find_bar)
         main_layout.addWidget(self.content_container, 1) # Add content area
 
         main_layout.addWidget(self.status) # type: ignore
+
+        # Status bar auto-clear timer
+        self.status_clear_timer = QTimer(self)
+        self.status_clear_timer.setSingleShot(True)
+        self.status_clear_timer.timeout.connect(lambda: self.status_label.setText("Ready"))
 
         self.setCentralWidget(main_container)
         
@@ -705,6 +719,16 @@ class TorBrowser(QMainWindow):
                 background-color: transparent;
                 border-radius: 8px;
             }}
+            QProgressBar#PageProgressBar {{
+                background-color: transparent;
+                border: none;
+                height: 2px;
+                max-height: 2px;
+            }}
+            QProgressBar#PageProgressBar::chunk {{
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 {self.ACCENT_COLOR}, stop:0.5 #60a5fa, stop:1 #a855f7);
+                border-radius: 1px;
+            }}
             /* TorStatusWidget is styled dynamically */
         """)
 
@@ -818,6 +842,16 @@ class TorBrowser(QMainWindow):
         search_bg_rgb = get_rgb_string(theme['TOOLBAR_COLOR'])
         sidebar_bg_rgb = get_rgb_string(theme['TOOLBAR_COLOR'])
         search_bg_alpha = '0.6' if self.theme_name == 'dark' else '0.85'
+
+        # Privacy Shield Telemetry Badge
+        total_blocked = self.privacy_shield.get_stats().get("total_blocked", 0) if hasattr(self, 'privacy_shield') else 0
+        shield_badge_html = f"""
+            <div class="shield-badge">
+                <span class="shield-dot"></span>
+                <span>Privacy Shield Active &bull; {total_blocked} Blocked</span>
+            </div>
+        """
+
         # --- Top Sites Logic ---
         top_sites = self.history_manager.get_top_sites(limit=8)
         top_sites_html = ""
@@ -940,6 +974,36 @@ class TorBrowser(QMainWindow):
             color: {theme['TEXT_COLOR']};
             text-shadow: 0 3px 15px rgba(0,0,0,0.2);
             margin: 0;
+        }}
+        .shield-badge {{
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            margin-bottom: 2rem;
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            border-radius: 9999px;
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: #10b981;
+            letter-spacing: 0.02em;
+            backdrop-filter: blur(8px);
+            transition: all 0.25s ease;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
+        }}
+        .shield-badge:hover {{
+            background: rgba(16, 185, 129, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+        }}
+        .shield-dot {{
+            width: 7px;
+            height: 7px;
+            background: #10b981;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #10b981;
+            display: inline-block;
         }}
         .search-form {{
             position: relative;
@@ -1218,6 +1282,7 @@ class TorBrowser(QMainWindow):
             <div class="logo">
                 {logo_html}
             </div>
+            {shield_badge_html}
             <form id="search-form" class="search-form">
                 <div class="search-icon">{search_icon_svg}</div>
                 <input type="text" id="search-input" class="search-input"
@@ -2750,15 +2815,25 @@ class TorBrowser(QMainWindow):
         def on_load_started():
             browser.is_loading = True
             self.update_status_message("Loading...")
+            if hasattr(self, 'page_progress_bar') and self.current_browser() == browser:
+                self.page_progress_bar.setValue(12)
+                self.page_progress_bar.show()
 
         def on_load_progress(p):
             browser.is_loading = True
             self.update_status_message(f"Loading... {p}%")
+            if hasattr(self, 'page_progress_bar') and self.current_browser() == browser:
+                self.page_progress_bar.setValue(p)
+                if self.page_progress_bar.isHidden():
+                    self.page_progress_bar.show()
 
         def on_load_finished(ok):
             browser.is_loading = False
             self.update_status_message("Ready" if ok else "Failed to load")
             self.update_navigation_state()
+            if hasattr(self, 'page_progress_bar') and self.current_browser() == browser:
+                self.page_progress_bar.setValue(100)
+                QTimer.singleShot(250, self.page_progress_bar.hide)
 
         browser.page().loadStarted.connect(on_load_started)
         browser.page().loadProgress.connect(on_load_progress)
@@ -2811,6 +2886,11 @@ class TorBrowser(QMainWindow):
             if isinstance(widget, BrowserTab):
                 if hasattr(self, 'tab_memory_manager'):
                     self.tab_memory_manager.record_tab_active(widget)
+                if hasattr(self, 'page_progress_bar'):
+                    if hasattr(widget, "is_loading") and widget.is_loading:
+                        self.page_progress_bar.show()
+                    else:
+                        self.page_progress_bar.hide()
                 url_str = widget.url().toString()
                 if hasattr(widget, "is_loading") and widget.is_loading:
                     self.update_status_message("Loading...")
@@ -2996,12 +3076,11 @@ class TorBrowser(QMainWindow):
         if message.startswith("http") and len(message) > 80:
             message = message[:77] + "..."
         self.status_label.setText(message) 
-        # If the message is not the default "Ready", start a timer to clear it.
-        if message != "Ready":
-            self.status_clear_timer.start()
-        else:
-            # If we are setting it to ready, stop any pending clear timers.
-            self.status_clear_timer.stop()
+        if hasattr(self, 'status_clear_timer'):
+            if message != "Ready":
+                self.status_clear_timer.start(3500)
+            else:
+                self.status_clear_timer.stop()
 
     def update_tor_status(self, url: QUrl):
         def _hex_to_rgba(hex_color, alpha):
@@ -3193,9 +3272,30 @@ class TorBrowser(QMainWindow):
             self.reader_mode_manager.toggle(current)
 
     def toggle_notes_sidebar(self):
-        """Toggles visibility of the research notes sidebar panel."""
-        if hasattr(self, 'notes_sidebar'):
-            is_vis = self.notes_sidebar.isVisible()
-            self.notes_sidebar.setVisible(not is_vis)
-            if not is_vis:
-                self.notes_sidebar.apply_theme(self.theme)
+        """Animates the research notes sidebar open or closed smoothly."""
+        if not hasattr(self, 'notes_sidebar'):
+            return
+
+        if not hasattr(self, 'notes_animation'):
+            self.notes_animation = QPropertyAnimation(self.notes_sidebar, b"maximumWidth")
+            self.notes_animation.setDuration(220)
+            self.notes_animation.setEasingCurve(QEasingCurve.Type.InOutCubic)
+
+        try:
+            self.notes_animation.finished.disconnect()
+        except Exception:
+            pass
+
+        target_width = 330
+        if self.notes_sidebar.isVisible():
+            self.notes_animation.setStartValue(self.notes_sidebar.width())
+            self.notes_animation.setEndValue(0)
+            self.notes_animation.finished.connect(lambda: self.notes_sidebar.setVisible(False))
+            self.notes_animation.start()
+        else:
+            self.notes_sidebar.apply_theme(self.theme)
+            self.notes_sidebar.setMaximumWidth(0)
+            self.notes_sidebar.setVisible(True)
+            self.notes_animation.setStartValue(0)
+            self.notes_animation.setEndValue(target_width)
+            self.notes_animation.start()
