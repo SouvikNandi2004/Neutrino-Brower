@@ -44,7 +44,7 @@ from bin.privacy_shield import PrivacyShieldInterceptor
 from bin.reader_mode import ReaderModeManager
 from bin.tab_memory_manager import TabMemoryManager
 from bin.notes_manager import NotesSidebarWidget
-from bin.utils import get_profile_path, SVG_ICONS, create_icon_from_svg, qicon_to_base64, qpixmap_to_base64, DraggableFramelessDialog, CustomMessageBox
+from bin.utils import get_profile_path, SVG_ICONS, create_icon_from_svg, qicon_to_base64, qpixmap_to_base64, DraggableFramelessDialog, CustomMessageBox, parse_color_to_rgb_string, parse_color_to_rgba
 from bin.url_bar import UrlBar
 from bin.tab_widget import TabWidget
 from bin.find_bar import FindBar
@@ -194,13 +194,7 @@ class WelcomeDialog(DraggableFramelessDialog):
 
     def apply_stylesheet(self):
         theme = self.main_window.theme
-        # A helper to get an "R, G, B" string from a color definition
-        def get_rgb_string(color_str):
-            if color_str.startswith('#'):
-                h = color_str.lstrip('#')
-                return ', '.join(str(int(h[i:i+2], 16)) for i in (0, 2, 4))
-            return "0, 0, 0" # Fallback
-        bg_rgb = get_rgb_string(theme['BG_COLOR'])
+        bg_rgb = parse_color_to_rgb_string(theme.get('BG_COLOR', '#1a1d24'))
         accent_color = self.main_window.ACCENT_COLOR
         check_icon_svg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="white" viewBox="0 0 16 16"><path d="M10.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0z"/></svg>'
 
@@ -607,12 +601,6 @@ class TorBrowser(QMainWindow):
         self.check_for_updates()
 
     def apply_stylesheet(self):
-        # Helper to get an "R, G, B" string from a color definition for rgba()
-        def get_rgb_string(color_str):
-            if color_str.startswith('#'):
-                h = color_str.lstrip('#')
-                return ', '.join(str(int(h[i:i+2], 16)) for i in (0, 2, 4))
-            return "0, 0, 0" # Fallback
         border_style = "1px solid transparent" # No border on Linux/macOS with native frame by default
         if sys.platform == "win32":
             border_style = f"1px solid {self.theme['BORDER_COLOR']}"
@@ -624,6 +612,8 @@ class TorBrowser(QMainWindow):
             stop: 0 {self.theme['TOOLBAR_COLOR']}, stop: 1 {self.BG_COLOR}
         )"""
 
+        toolbar_rgb = parse_color_to_rgb_string(self.theme.get('TOOLBAR_COLOR', '#1e1e1e'))
+
         self.setStyleSheet(f"""/* Base Styles */
             #MainWindow, #TitleBarWidget {{
                 background-color: {self.BG_COLOR};
@@ -633,8 +623,8 @@ class TorBrowser(QMainWindow):
             }}
             #TitleBarWidget {{ /* On macOS, this should be transparent to show the native blur */
                 background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 rgba({get_rgb_string(self.theme['TOOLBAR_COLOR'])}, 0.9),
-                    stop:1 rgba({get_rgb_string(self.theme['TOOLBAR_COLOR'])}, 0.7));
+                    stop:0 rgba({toolbar_rgb}, 0.9),
+                    stop:1 rgba({toolbar_rgb}, 0.7));
                 border-bottom: none;
             }}
             #ContentStack {{
@@ -832,22 +822,8 @@ class TorBrowser(QMainWindow):
             # Fallback to a gradient if all else fails
             background_image_css = f"background-image: linear-gradient(to bottom, {theme['TOOLBAR_COLOR']}, {theme['BG_COLOR']});"
 
-        # A helper to get an "R, G, B" string from a color definition
-        def get_rgb_string(color_str):
-            """Handles both #RRGGBB and rgba(r,g,b,a) formats."""
-            if color_str.startswith('rgba'):
-                # Extract the 'r, g, b' part from 'rgba(r, g, b, a)'
-                try:
-                    return color_str.split('(')[1].split(')')[0].rsplit(',', 1)[0]
-                except (IndexError, ValueError):
-                    return "0, 0, 0" # Fallback
-            elif color_str.startswith('#'):
-                h = color_str.lstrip('#')
-                return ', '.join(str(int(h[i:i+2], 16)) for i in (0, 2, 4))
-            return "0, 0, 0" # Fallback for unknown formats
-
-        search_bg_rgb = get_rgb_string(theme['TOOLBAR_COLOR'])
-        sidebar_bg_rgb = get_rgb_string(theme['TOOLBAR_COLOR'])
+        search_bg_rgb = parse_color_to_rgb_string(theme.get('TOOLBAR_COLOR', '#1e1e1e'))
+        sidebar_bg_rgb = parse_color_to_rgb_string(theme.get('TOOLBAR_COLOR', '#1e1e1e'))
         search_bg_alpha = '0.6' if self.theme_name == 'dark' else '0.85'
 
         # Privacy Shield Telemetry Badge
@@ -3091,11 +3067,6 @@ class TorBrowser(QMainWindow):
                 self.status_clear_timer.stop()
 
     def update_tor_status(self, url: QUrl):
-        def _hex_to_rgba(hex_color, alpha):
-            hex_color = hex_color.lstrip('#')
-            r, g, b = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
-            return f"rgba({r}, {g}, {b}, {alpha})"
-
         if sys.platform == "darwin":
             self.tor_status_widget.hide()
             return
@@ -3115,8 +3086,8 @@ class TorBrowser(QMainWindow):
                 self.tor_status_label.setText("Dark Web Active")
             
             secure_color = self.SECURE_COLOR
-            secure_bg = _hex_to_rgba(secure_color, 0.15)
-            secure_border = _hex_to_rgba(secure_color, 0.3)
+            secure_bg = parse_color_to_rgba(secure_color, 0.15)
+            secure_border = parse_color_to_rgba(secure_color, 0.3)
 
             self.tor_status_widget.setStyleSheet(f"""
                 QWidget#TorStatusWidget {{

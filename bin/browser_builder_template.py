@@ -9,6 +9,7 @@
 import sys
 import os
 import subprocess
+from PyQt6.QtWebEngineWidgets import QWebEngineView
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtCore import QSettings
 import base64
@@ -29,7 +30,7 @@ if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
         sys.path.insert(0, bin_path)
 
 from bin.tor_browser import TorBrowser
-from bin.utils import start_tor, SVG_ICONS, resource_path
+from bin.utils import start_tor, SVG_ICONS, resource_path, parse_color_to_rgb_string
 from bin.updater import Updater
 
 # --- PLACEHOLDERS ---
@@ -300,13 +301,8 @@ class CustomAboutTorBrowser(TorBrowser):
             # Fallback to a gradient if all else fails
             background_image_css = f"background-image: linear-gradient(to bottom, {theme['TOOLBAR_COLOR']}, {theme['BG_COLOR']});"
 
-        # A helper to convert hex to an RGB string for rgba()
-        def hex_to_rgb_string(hex_str):
-            h = hex_str.lstrip('#')
-            return ', '.join(str(int(h[i:i+2], 16)) for i in (0, 2, 4))
-
-        search_bg_rgb = hex_to_rgb_string(theme['TOOLBAR_COLOR'])
-        sidebar_bg_rgb = hex_to_rgb_string(theme['TOOLBAR_COLOR'])
+        search_bg_rgb = parse_color_to_rgb_string(theme.get('TOOLBAR_COLOR', '#1e1e1e'))
+        sidebar_bg_rgb = parse_color_to_rgb_string(theme.get('TOOLBAR_COLOR', '#1e1e1e'))
         search_bg_alpha = '0.6' if self.theme_name == 'dark' else '0.85'
         # --- Top Sites Logic ---
         top_sites = self.history_manager.get_top_sites(limit=8)

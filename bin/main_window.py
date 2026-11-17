@@ -33,14 +33,14 @@ if __package__ is None or __package__ == "":
     from bin.settings_page import SettingsPage
     from bin.history_manager import HistoryManager
     from bin.updater import Updater
-    from bin.utils import get_profile_path, SVG_ICONS, create_icon_from_svg, qicon_to_base64
+    from bin.utils import get_profile_path, SVG_ICONS, create_icon_from_svg, qicon_to_base64, parse_color_to_rgb_tuple
 else:
     from bin.browser_tab import BrowserTab
     from bin.download_manager import DownloadManagerPage
     from bin.settings_page import SettingsPage
     from bin.history_manager import HistoryManager
     from bin.updater import Updater
-    from bin.utils import get_profile_path, SVG_ICONS, create_icon_from_svg, qicon_to_base64
+    from bin.utils import get_profile_path, SVG_ICONS, create_icon_from_svg, qicon_to_base64, parse_color_to_rgb_tuple
 from .url_bar import UrlBar
 
 # Global reference to main window
@@ -400,12 +400,7 @@ class TorBrowser(QMainWindow):
         settings = QSettings("DisunicX", "Browser")
         search_engine = settings.value("search_engine", "DuckDuckGo")
 
-        # Convert hex to RGB for transparent colors
-        def hex_to_rgb(hex_color):
-            hex_color = hex_color.lstrip('#')
-            return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
-
-        bg_rgb = hex_to_rgb(self.BG_COLOR)
+        bg_rgb = parse_color_to_rgb_tuple(self.BG_COLOR)
         text_color = self.TEXT_COLOR
         border_color = self.BORDER_COLOR
         accent_color = self.ACCENT_COLOR

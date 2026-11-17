@@ -399,3 +399,48 @@ def start_tor(tor_executable_path=None, config_file_path=None):
     except FileNotFoundError:
         print(f"ERROR: Could not find the command '{cmd[0]}'. Please ensure it is installed and in your system's PATH.")
         return None
+
+
+def parse_color_to_rgb_string(color_str: str) -> str:
+    """Safely extracts 'R, G, B' from '#RRGGBB', '#RGB', 'rgb(...)', or 'rgba(...)'. Returns '0, 0, 0' fallback."""
+    if not color_str or not isinstance(color_str, str):
+        return "0, 0, 0"
+    color_str = color_str.strip()
+    if color_str.startswith("rgba"):
+        try:
+            return color_str.split("(", 1)[1].split(")", 1)[0].rsplit(",", 1)[0].strip()
+        except Exception:
+            return "0, 0, 0"
+    elif color_str.startswith("rgb"):
+        try:
+            return color_str.split("(", 1)[1].split(")", 1)[0].strip()
+        except Exception:
+            return "0, 0, 0"
+    elif color_str.startswith("#"):
+        h = color_str.lstrip("#")
+        if len(h) == 3:
+            h = "".join(c * 2 for c in h)
+        if len(h) >= 6:
+            try:
+                return ", ".join(str(int(h[i:i+2], 16)) for i in (0, 2, 4))
+            except Exception:
+                return "0, 0, 0"
+    return "0, 0, 0"
+
+
+def parse_color_to_rgb_tuple(color_str: str) -> tuple[int, int, int]:
+    """Safely extracts (r, g, b) integers from '#RRGGBB', '#RGB', 'rgb(...)', or 'rgba(...)'. Returns (0, 0, 0) fallback."""
+    rgb_str = parse_color_to_rgb_string(color_str)
+    try:
+        parts = [int(p.strip()) for p in rgb_str.split(",")]
+        if len(parts) >= 3:
+            return (parts[0], parts[1], parts[2])
+    except Exception:
+        pass
+    return (0, 0, 0)
+
+
+def parse_color_to_rgba(color_str: str, alpha: float) -> str:
+    """Returns 'rgba(r, g, b, alpha)' safely from any color representation."""
+    rgb = parse_color_to_rgb_string(color_str)
+    return f"rgba({rgb}, {alpha})"
