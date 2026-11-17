@@ -402,7 +402,7 @@ class TorBrowser(QMainWindow):
         self.adblocker = AdblockInterceptor()
         self.adblocker.load_rules()
         self.privacy_shield = self.adblocker  # Modern alias for Qelaro and Neutrino
-        if settings.value("adblocker_enabled", True, type=bool):
+        if self.settings.value("adblocker_enabled", True, type=bool):
             self.profile.setUrlRequestInterceptor(self.adblocker)
 
         # --- Modern Browser Managers ---
