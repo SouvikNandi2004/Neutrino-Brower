@@ -360,10 +360,12 @@ class BrowserTab(QWebEngineView):
         save_page_action = menu.addAction(create_icon_from_svg(SVG_ICONS["downloads"], theme['ICON_COLOR']), "Save Page As...", lambda: self.triggerPageAction(QWebEnginePage.WebAction.SavePage)) # type: ignore
         
         url_string = self.url().toString()
-        is_special_page = not url_string or url_string.startswith(("disunic:", "view-source:", "about:"))
+        is_special_page = not url_string or url_string.startswith(("disunic:", "neutrino:", "qelaro:", "view-source:", "about:"))
         
         save_page_action.setEnabled(not is_special_page)
         if not is_special_page:
+            reader_text = "Exit Reader Mode" if getattr(self, "in_reader_mode", False) else "Toggle Reader Mode"
+            menu.addAction(create_icon_from_svg(SVG_ICONS["reader_mode"], theme['ICON_COLOR']), reader_text, self.toggle_reader_mode)
             menu.addAction(create_icon_from_svg(SVG_ICONS["qr_code"], theme['ICON_COLOR']), "Create QR code for this page", self.create_qr_code_for_page)
         menu.addSeparator()
         
@@ -440,10 +442,15 @@ class BrowserTab(QWebEngineView):
             except Exception as e:
                 QMessageBox.critical(self, "Save Error", f"Could not save QR code image: {e}")
 
+    def toggle_reader_mode(self):
+        """Toggles distraction-free reader mode via the main window's reader manager."""
+        if hasattr(self.main_window, 'reader_mode_manager'):
+            self.main_window.reader_mode_manager.toggle(self)
+
     def create_qr_code_for_page(self):
         """Generates and displays a QR code for the current page's URL."""
         url_string = self.url().toString()
-        if not url_string or url_string.startswith(("disunic:", "view-source:", "about:")):
+        if not url_string or url_string.startswith(("disunic:", "neutrino:", "qelaro:", "view-source:", "about:")):
             CustomMessageBox.information(
                 self,
                 "Cannot Create QR Code",

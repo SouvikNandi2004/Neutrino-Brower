@@ -40,7 +40,7 @@ class HistoryManager:
             """)
 
     def add_visit(self, url, title, favicon_base64=None):
-        if url.startswith("disunic://") or url.startswith("about:"):
+        if url.startswith(("disunic://", "neutrino://", "qelaro://", "about:")):
             return
         with self.conn:
             self.conn.execute(
@@ -65,7 +65,7 @@ class HistoryManager:
         domain_counts = Counter()
 
         for url_str, title, favicon in all_visits:
-            if url_str.startswith(("disunic://", "about:")):
+            if url_str.startswith(("disunic://", "neutrino://", "qelaro://", "about:")):
                 continue
             try:
                 parsed_url = urlparse(url_str)

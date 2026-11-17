@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+dist/
+*.egg-info/
+
+# Operating System
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# User Profile / Cache Data
+profile/
+Cache/
+*.log
+research_notes.json
+privacy_shield_cache.txt
+privacy_whitelist.txt

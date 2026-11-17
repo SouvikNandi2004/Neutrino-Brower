@@ -33,6 +33,10 @@ from bin.history_manager import HistoryManager
 from bin.bookmarks_manager import BookmarksManager
 from bin.updater import Updater
 from bin.adblocker import AdblockInterceptor
+from bin.privacy_shield import PrivacyShieldInterceptor
+from bin.reader_mode import ReaderModeManager
+from bin.tab_memory_manager import TabMemoryManager
+from bin.notes_manager import NotesSidebarWidget
 from bin.utils import get_profile_path, SVG_ICONS, create_icon_from_svg, qicon_to_base64, qpixmap_to_base64, DraggableFramelessDialog, CustomMessageBox
 from bin.url_bar import UrlBar
 from bin.tab_widget import TabWidget
@@ -305,7 +309,7 @@ class HistoryPageBackend(QObject):
         self.clearHistoryRequested.emit()
 
 class TorBrowser(QMainWindow):
-    __version__ = "1.5.5"
+    __version__ = "2.0.0"
     # New default theme for the liquid glass design
     DEFAULT_THEMES = {
         "liquid_glass": { "BG_COLOR": "#1e1e1e", "TEXT_COLOR": "#e0e0e0", "TOOLBAR_COLOR": "rgba(30, 30, 30, 0.65)", "URL_BAR_COLOR": "#18181B", "BORDER_COLOR": "rgba(255, 255, 255, 0.1)", "TAB_ACTIVE_COLOR": "#1e1e1e", "TAB_HOVER_COLOR": "rgba(255, 255, 255, 0.1)", "TAB_TEXT_COLOR": "#a0a0a0", "TAB_TEXT_SELECTED_COLOR": "#ffffff", "ICON_COLOR": "#e0e0e0", "STATUS_BAR_TEXT_COLOR": "#a0a0a0", "URL_BAR_BG": "#2c2c2c", "URL_BAR_BORDER": "rgba(255, 255, 255, 0.15)", "BUTTON_HOVER_COLOR": "rgba(255, 255, 255, 0.1)", "BUTTON_PRESSED_COLOR": "rgba(255, 255, 255, 0.05)", "MENU_BG_COLOR": "rgba(30, 30, 30, 0.8)", "MENU_SEPARATOR_COLOR": "rgba(255, 255, 255, 0.1)", "DISABLED_TEXT_COLOR": "#666666", "MSGBOX_BUTTON_BG": "rgba(255, 255, 255, 0.1)", "DANGER_COLOR": "#e53935", "SECURE_COLOR": "#43a047", "CONTENT_BG_COLOR": "#121212" },
@@ -365,7 +369,11 @@ class TorBrowser(QMainWindow):
         self.setMinimumSize(600, 400) # Set a reasonable minimum size
         # --- Theme Colors ---
         self.load_themes()
-        settings = QSettings("DisunicX", "Browser")
+        settings = QSettings("Neutrino", "Browser")
+        if not settings.contains("theme"):
+            legacy_settings = QSettings("DisunicX", "Browser")
+            if legacy_settings.contains("theme"):
+                settings = legacy_settings
         self.tab_style = "modern" if settings.value("tab_style", 0, type=int) == 0 else "classic"
         self.theme_name = settings.value("theme", "dark", type=str)
         # Ensure theme_name is valid, otherwise default to "dark"
@@ -383,19 +391,23 @@ class TorBrowser(QMainWindow):
         self.DANGER_COLOR = self.theme["DANGER_COLOR"]
         self.SECURE_COLOR = self.theme["SECURE_COLOR"]
 
-        self.profile = QWebEngineProfile("DisunicXProfile", self)
+        self.profile = QWebEngineProfile("NeutrinoProfile", self)
         self.profile.setPersistentStoragePath(get_profile_path())
         self.profile.setPersistentCookiesPolicy(QWebEngineProfile.PersistentCookiesPolicy.AllowPersistentCookies)
         self.profile.setCachePath(os.path.join(get_profile_path(), "Cache"))
         self.profile.setHttpCacheType(QWebEngineProfile.HttpCacheType.DiskHttpCache)
         self.set_tor_proxy()
 
-        # --- Ad Blocker Setup ---
+        # --- Privacy Shield & Ad Blocker Setup ---
         self.adblocker = AdblockInterceptor()
         self.adblocker.load_rules()
+        self.privacy_shield = self.adblocker  # Modern alias for Qelaro and Neutrino
         if settings.value("adblocker_enabled", True, type=bool):
             self.profile.setUrlRequestInterceptor(self.adblocker)
 
+        # --- Modern Browser Managers ---
+        self.reader_mode_manager = ReaderModeManager(self)
+        self.tab_memory_manager = TabMemoryManager(self, self)
 
         # Connect the download request signal here, only once.
         self.profile.downloadRequested.connect(self.handle_new_download)
@@ -411,9 +423,9 @@ class TorBrowser(QMainWindow):
         # This needs to be called before the UI is built so the window can be shown
         # if the dialog is accepted.
         if sys.platform == "win32":
-            self.setWindowTitle(f"DisunicX v{self.__version__}")
+            self.setWindowTitle(f"Neutrino Browser v{self.__version__}")
         else:
-            self.setWindowTitle("DisunicX")
+            self.setWindowTitle("Neutrino Browser")
         self.setGeometry(100, 100, 1200, 800)
 
         self.toolbar = QToolBar("mainToolbar")
@@ -516,7 +528,12 @@ class TorBrowser(QMainWindow):
         else:
             self.main_stack.addWidget(self.tab_widget)
         self.main_stack.addWidget(self.tab_overview)
-        self.content_layout.addWidget(self.main_stack)
+        self.content_layout.addWidget(self.main_stack, 1)
+
+        # Embedded Research Notes Sidebar
+        self.notes_sidebar = NotesSidebarWidget(self, self)
+        self.content_layout.addWidget(self.notes_sidebar)
+        self.notes_sidebar.hide()
 
         # Add widgets to main layout in the correct order
         main_layout.addWidget(self.title_bar_widget) # Contains tabs (classic) or toolbar (modern)
@@ -546,6 +563,16 @@ class TorBrowser(QMainWindow):
         # Add shortcut for Find
         find_shortcut = QShortcut(QKeySequence.StandardKey.Find, self)
         find_shortcut.activated.connect(self.show_find_bar)
+
+        # Shortcuts for Modern Productivity & Privacy Features
+        reader_shortcut = QShortcut(QKeySequence("Ctrl+Alt+R"), self)
+        reader_shortcut.activated.connect(self.toggle_reader_mode)
+
+        restore_tab_shortcut = QShortcut(QKeySequence("Ctrl+Shift+T"), self)
+        restore_tab_shortcut.activated.connect(self.tab_memory_manager.restore_last_closed_tab)
+
+        notes_shortcut = QShortcut(QKeySequence("Ctrl+Shift+N"), self)
+        notes_shortcut.activated.connect(self.toggle_notes_sidebar)
 
         if sys.platform == "darwin":
             self.setup_menu_bar()
@@ -2109,6 +2136,7 @@ class TorBrowser(QMainWindow):
         self.url_bar.url_edit.setStyleSheet(f"color: {self.TEXT_COLOR};") # Ensure text color
         self.url_bar.url_edit.returnPressed.connect(self.navigate_to_url)
         self.url_bar.bookmarkButtonClicked.connect(self.toggle_bookmark)
+        self.url_bar.readerButtonClicked.connect(self.toggle_reader_mode)
         self.toolbar.addWidget(self.url_bar)
 
         # In modern style, the new tab and overview buttons are in the toolbar
@@ -2134,6 +2162,12 @@ class TorBrowser(QMainWindow):
             downloads_btn.setToolTip("Downloads")
             downloads_btn.clicked.connect(self.open_downloads)
             self.toolbar.addWidget(downloads_btn)
+
+            self.notes_btn = QPushButton()
+            self.notes_btn.setIcon(create_icon_from_svg(SVG_ICONS["notes"], icon_color))
+            self.notes_btn.setToolTip("Research Notes (Ctrl+Shift+N)")
+            self.notes_btn.clicked.connect(self.toggle_notes_sidebar)
+            self.toolbar.addWidget(self.notes_btn)
 
             self.menu_btn = QPushButton()
             self.menu_btn.setIcon(create_icon_from_svg(SVG_ICONS["menu"], icon_color))
@@ -2547,6 +2581,27 @@ class TorBrowser(QMainWindow):
         duplicate_action.triggered.connect(lambda: self.add_new_tab(browser.url()))
         menu.addAction(duplicate_action)
 
+        # Pin / Unpin Tab
+        is_pinned = self.tab_memory_manager.is_tab_pinned(browser)
+        pin_text = "Unpin Tab" if is_pinned else "Pin Tab"
+        pin_action = QAction(create_icon_from_svg(SVG_ICONS["pin"], icon_color, QSize(16, 16)), pin_text, self)
+        pin_action.triggered.connect(lambda: self.tab_memory_manager.toggle_pin_tab(browser))
+        menu.addAction(pin_action)
+
+        # Reader Mode toggle
+        url_str = browser.url().toString()
+        if not url_str.startswith(("disunic:", "neutrino:", "qelaro:", "about:")):
+            reader_text = "Exit Reader View" if getattr(browser, "in_reader_mode", False) else "Reader View"
+            reader_action = QAction(create_icon_from_svg(SVG_ICONS["reader_mode"], icon_color, QSize(16, 16)), reader_text, self)
+            reader_action.triggered.connect(lambda: self.reader_mode_manager.toggle(browser))
+            menu.addAction(reader_action)
+
+            # Hibernate / Sleep Tab
+            if not getattr(browser, "is_sleeping", False):
+                sleep_action = QAction(create_icon_from_svg(SVG_ICONS["restore_tab"], icon_color, QSize(16, 16)), "Hibernate Tab (Save RAM)", self)
+                sleep_action.triggered.connect(lambda: self.tab_memory_manager.sleep_tab(browser))
+                menu.addAction(sleep_action)
+
         menu.addSeparator()
 
         # Close
@@ -2676,8 +2731,9 @@ class TorBrowser(QMainWindow):
         browser = self.add_new_tab()
         browser.setHtml(html, QUrl("disunic://about")) # type: ignore
     
-    def add_new_tab(self, url=None):
-        # Ensure url is a QUrl object if it's passed as a string
+    def add_new_tab(self, url=None, activate=True):
+        if isinstance(url, bool):
+            url = None
         if isinstance(url, str):
             url = QUrl(url)
 
@@ -2689,7 +2745,6 @@ class TorBrowser(QMainWindow):
         browser.page().zoomFactorChanged.connect(self.update_zoom_label)
 
         browser.audioStateChanged.connect(self.update_tab_audio_indicator)
-        # Track loading state
         browser.is_loading = False
 
         def on_load_started():
@@ -2714,22 +2769,31 @@ class TorBrowser(QMainWindow):
                 self.find_bar.update_results(result.activeMatch(), result.numberOfMatches())
         browser.page().findTextFinished.connect(on_find_finished)
 
-        browser.page().linkHovered.connect(lambda url: self.update_status_message(url if url else ("Loading..." if browser.is_loading else "Ready")))
+        browser.page().linkHovered.connect(lambda u: self.update_status_message(u if u else ("Loading..." if browser.is_loading else "Ready")))
 
         browser.titleChanged.connect(self.update_tab_title)
         browser.page().iconChanged.connect(lambda icon, b=browser: self.update_tab_icon(b, icon))
 
         load_new_tab_page = False
-        if url is None:
+        if url is None or (hasattr(url, "toString") and url.toString() in ["disunic://newtab", "neutrino://newtab", "qelaro://newtab"]):
             load_new_tab_page = True
 
         # Add to stacked widget and tab bar
-        self.tab_widget.add_tab(browser, "Loading...")
+        index = self.tab_widget.add_tab(browser, "Loading...")
+
+        if activate:
+            self.tab_widget.set_current_index(index)
+
+        # Track tab with TabMemoryManager
+        if hasattr(self, 'tab_memory_manager'):
+            self.tab_memory_manager.record_tab_active(browser)
 
         # Load the content
         if load_new_tab_page:
             html = self.get_new_tab_html()
-            browser.setHtml(html, QUrl("disunic://newtab"))
+            browser.setHtml(html, QUrl("neutrino://newtab"))
+        elif hasattr(url, "toString") and url.toString() == "about:blank":
+            browser.setUrl(url)
         else:
             browser.setUrl(url)
         
@@ -2745,22 +2809,24 @@ class TorBrowser(QMainWindow):
             widget = self.tab_widget.widget(index)
 
             if isinstance(widget, BrowserTab):
+                if hasattr(self, 'tab_memory_manager'):
+                    self.tab_memory_manager.record_tab_active(widget)
                 url_str = widget.url().toString()
                 if hasattr(widget, "is_loading") and widget.is_loading:
                     self.update_status_message("Loading...")
-                elif url_str == "disunic://history":
+                elif url_str in ["disunic://history", "neutrino://history"]:
                     self.update_status_message("History")
-                elif url_str == "disunic://about":
-                    self.update_status_message("About DisunicX")
+                elif url_str in ["disunic://about", "neutrino://about"]:
+                    self.update_status_message("About Neutrino Browser")
                 else:
                     self.update_status_message("Ready")
                 self.update_url_bar(widget.url())
                 self.update_bookmark_button_state(widget.url())
             elif isinstance(widget, DownloadManagerPage):
-                self.update_url_bar(QUrl("disunic://downloads"))
+                self.update_url_bar(QUrl("neutrino://downloads"))
                 self.update_status_message("Downloads")
             elif isinstance(widget, SettingsPage):
-                self.update_url_bar(QUrl("disunic://settings"))
+                self.update_url_bar(QUrl("neutrino://settings"))
                 self.update_status_message("Settings")
             
             self.update_navigation_state()
@@ -2773,17 +2839,30 @@ class TorBrowser(QMainWindow):
     
     def close_tab(self, index):
         if self.tab_widget.count() > 1:
-            widget_to_remove = self.tab_widget.remove_tab(index)
+            widget_to_remove = self.tab_widget.widget(index)
+            # Check pinned status
+            if hasattr(self, 'tab_memory_manager') and self.tab_memory_manager.is_tab_pinned(widget_to_remove):
+                reply = CustomMessageBox.question(
+                    self,
+                    "Close Pinned Tab?",
+                    "This tab is pinned. Are you sure you want to close it?",
+                    buttons=QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                    defaultButton=QMessageBox.StandardButton.No
+                )
+                if reply != QMessageBox.StandardButton.Yes:
+                    return
+
+            widget_removed = self.tab_widget.remove_tab(index)
+            if hasattr(self, 'tab_memory_manager'):
+                self.tab_memory_manager.record_tab_closed(widget_removed, index)
 
             # Special handling for the download manager tab
-            if widget_to_remove == self.download_manager:
+            if widget_removed == self.download_manager:
                 self.download_manager_is_in_tab = False
-                # IMPORTANT: Do not delete the widget, just hide it.
-                # It's parented to the main window, so it won't be garbage collected.
-            elif widget_to_remove == self.settings_page:
+            elif widget_removed == self.settings_page:
                 self.settings_page_is_in_tab = False
             else:
-                widget_to_remove.deleteLater() # Important to free memory
+                widget_removed.deleteLater() # Important to free memory
         else:
             self.close()
     
@@ -3100,534 +3179,23 @@ class TorBrowser(QMainWindow):
         if sys.platform != "darwin":
             self.menu_btn.setIcon(create_icon_from_svg(SVG_ICONS["menu"], color))
 
-    def show_tab_context_menu(self, index, global_pos):
-        browser = self.tab_widget.widget(index)
-        # Only show for BrowserTab, not for Settings, Downloads etc.
-        if not isinstance(browser, BrowserTab):
-            return
-
-        theme = self.theme
-        menu = QMenu(self) # type: ignore
-        menu.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        menu.setWindowFlags(menu.windowFlags() | Qt.WindowType.FramelessWindowHint | Qt.WindowType.Popup)
-        menu.setStyleSheet(f"""
-            QMenu {{ # type: ignore
-                background-color: {theme['MENU_BG_COLOR']};
-                color: {theme['TEXT_COLOR']};
-                border: 1px solid {theme['BORDER_COLOR']};
-                border-radius: 8px;
-                padding: 8px;
-                font-family: "Segoe UI", sans-serif;
-                font-size: 13px;
-                font-weight: 700; 
-            }}
-            QMenu::item {{
-                padding: 8px 20px;
-                margin: 0;
-                border-radius: 6px;
-                min-width: 180px;
-                background-color: transparent;
-            }}
-            QMenu::item:selected {{
-                background-color: {self.ACCENT_COLOR};
-                color: #ffffff;
-            }}
-            QMenu::item:disabled {{
-                color: {theme['DISABLED_TEXT_COLOR']};
-                background-color: transparent;
-            }}
-            QMenu::separator {{
-                height: 1px;
-                background: {theme['MENU_SEPARATOR_COLOR']};
-                margin: 8px 4px;
-            }}
-            QMenu::icon {{
-                padding-left: 5px;
-            }}
-        """)
-
-        icon_color = theme["ICON_COLOR"]
-
-        # Mute/Unmute action
-        if browser.page().recentlyAudible():
-            is_muted = browser.page().isAudioMuted()
-            mute_action_text = "Unmute Tab" if is_muted else "Mute Tab"
-            icon_name = "audio_muted" if is_muted else "audio_playing" # type: ignore
-            mute_action = QAction(create_icon_from_svg(SVG_ICONS[icon_name], icon_color, QSize(16, 16)), mute_action_text, self)
-            mute_action.triggered.connect(browser.toggle_mute)
-            menu.addAction(mute_action)
-            menu.addSeparator()
-
-        # Reload
-        reload_action = QAction(create_icon_from_svg(SVG_ICONS["reload"], icon_color, QSize(16, 16)), "Reload", self)
-        reload_action.triggered.connect(browser.reload)
-        menu.addAction(reload_action)
-
-        # Duplicate
-        duplicate_action = QAction(create_icon_from_svg(SVG_ICONS["new_tab"], icon_color, QSize(16, 16)), "Duplicate", self)
-        duplicate_action.triggered.connect(lambda: self.add_new_tab(browser.url()))
-        menu.addAction(duplicate_action)
-
-        menu.addSeparator()
-
-        # Close
-        close_action = QAction(create_icon_from_svg(SVG_ICONS["close"], icon_color, QSize(16, 16)), "Close Tab", self)
-        close_action.triggered.connect(lambda: self.close_tab(index))
-        menu.addAction(close_action)
-
-        menu.exec(global_pos)
-
-    def show_tab_context_menu(self, index, global_pos):
-        browser = self.tab_widget.widget(index)
-        # Only show for BrowserTab, not for Settings, Downloads etc.
-        if not isinstance(browser, BrowserTab):
-            return
-
-        theme = self.theme
-        menu = QMenu(self) # type: ignore
-        menu.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        menu.setWindowFlags(menu.windowFlags() | Qt.WindowType.FramelessWindowHint | Qt.WindowType.Popup)
-        menu.setStyleSheet(f"""
-            QMenu {{ # type: ignore
-                background-color: {theme['MENU_BG_COLOR']};
-                color: {theme['TEXT_COLOR']};
-                border: 1px solid {theme['BORDER_COLOR']};
-                border-radius: 8px;
-                padding: 8px;
-                font-family: "Segoe UI", sans-serif;
-                font-size: 13px;
-                font-weight: 700; 
-            }}
-            QMenu::item {{
-                padding: 8px 20px;
-                margin: 0;
-                border-radius: 6px;
-                min-width: 180px;
-                background-color: transparent;
-            }}
-            QMenu::item:selected {{
-                background-color: {self.ACCENT_COLOR};
-                color: #ffffff;
-            }}
-            QMenu::item:disabled {{
-                color: {theme['DISABLED_TEXT_COLOR']};
-                background-color: transparent;
-            }}
-            QMenu::separator {{
-                height: 1px;
-                background: {theme['MENU_SEPARATOR_COLOR']};
-                margin: 8px 4px;
-            }}
-            QMenu::icon {{
-                padding-left: 5px;
-            }}
-        """)
-
-        icon_color = theme["ICON_COLOR"]
-
-        # Mute/Unmute action
-        if browser.page().recentlyAudible():
-            is_muted = browser.page().isAudioMuted()
-            mute_action_text = "Unmute Tab" if is_muted else "Mute Tab"
-            icon_name = "audio_muted" if is_muted else "audio_playing" # type: ignore
-            mute_action = QAction(create_icon_from_svg(SVG_ICONS[icon_name], icon_color, QSize(16, 16)), mute_action_text, self)
-            mute_action.triggered.connect(browser.toggle_mute)
-            menu.addAction(mute_action)
-            menu.addSeparator()
-
-        # Reload
-        reload_action = QAction(create_icon_from_svg(SVG_ICONS["reload"], icon_color, QSize(16, 16)), "Reload", self)
-        reload_action.triggered.connect(browser.reload)
-        menu.addAction(reload_action)
-
-        # Duplicate
-        duplicate_action = QAction(create_icon_from_svg(SVG_ICONS["new_tab"], icon_color, QSize(16, 16)), "Duplicate", self)
-        duplicate_action.triggered.connect(lambda: self.add_new_tab(browser.url()))
-        menu.addAction(duplicate_action)
-
-        menu.addSeparator()
-
-        # Close
-        close_action = QAction(create_icon_from_svg(SVG_ICONS["close"], icon_color, QSize(16, 16)), "Close Tab", self)
-        close_action.triggered.connect(lambda: self.close_tab(index))
-        menu.addAction(close_action)
-
-        menu.exec(global_pos)
-
-    def open_history(self):
-        # Check if a history tab is already open and switch to it
-        for i in range(self.tab_widget.count()):
-            widget = self.tab_widget.widget(i)
-            if isinstance(widget, BrowserTab) and widget.url().toString() == "disunic://history":
-                self.tab_widget.set_current_index(i)
-                return
-
-        # If not, create a new tab for history
-        html = self.get_history_page_html()
-        browser = self.add_new_tab()
-
-        # Setup QWebChannel to allow JS to call Python
-        channel = QWebChannel(browser.page())
-        history_backend = HistoryPageBackend(self.history_manager)
-        history_backend.clearHistoryRequested.connect(self.clear_browsing_data)
-        channel.registerObject("backend", history_backend)
-        browser.page().setWebChannel(channel)
-
-        # Keep backend and channel alive with the browser tab to prevent garbage collection
-        browser.history_backend = history_backend
-        browser.channel = channel
-
-        browser.setHtml(html, QUrl("disunic://history"))
-
-    def open_downloads(self):
-        """Opens the download manager in a new tab, or switches to it if already open."""
-        if self.download_manager_is_in_tab:
-            for i in range(self.tab_widget.count()):
-                if self.tab_widget.widget(i) == self.download_manager:
-                    self.tab_widget.set_current_index(i)
-                    return
-        
-        # If not in a tab, add it
-        icon_color = self.theme["ICON_COLOR"]
-        icon = create_icon_from_svg(SVG_ICONS["downloads"], icon_color)
-        self.tab_widget.add_tab(self.download_manager, "Downloads", icon)
-        self.download_manager_is_in_tab = True
-
-
-    def open_settings(self, tab_index=0):
-        """Opens the settings page in a new tab, or switches to it if already open."""
-        if self.settings_page_is_in_tab:
-            for i in range(self.tab_widget.count()):
-                if self.tab_widget.widget(i) == self.settings_page:
-                    self.tab_widget.set_current_index(i)
-                    self.settings_page.nav_list.setCurrentRow(tab_index) # Also switch to the correct inner tab
-                    return
-
-        # If not in a tab, add it
-        icon_color = self.theme["ICON_COLOR"]
-        icon = create_icon_from_svg(SVG_ICONS["settings_general"], icon_color) # type: ignore
-        self.tab_widget.add_tab(self.settings_page, "Settings", icon)
-        self.settings_page.nav_list.setCurrentRow(tab_index)
-        self.settings_page_is_in_tab = True
-    
-    def clear_browsing_data(self):
-        reply = CustomMessageBox.question(
-            self,
-            "Clear Browsing Data",
-            "Are you sure you want to clear all browsing data (history, cookies, cache)? This action cannot be undone.",
-            buttons=QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-            defaultButton=QMessageBox.StandardButton.No
-        )
-        
-        if reply == QMessageBox.StandardButton.Yes:
-            self.profile.cookieStore().deleteAllCookies()
-            self.profile.clearHttpCache()
-            self.history_manager.clear_history()
-            self.download_manager.clear_all()
-
-            # Find and update any open history tabs
-            for i in range(self.tab_widget.count()):
-                widget = self.tab_widget.widget(i)
-                if isinstance(widget, BrowserTab) and widget.url().toString() == "disunic://history":
-                    if hasattr(widget, 'history_backend'):
-                        # Emit the signal to tell the JS to clear its view
-                        widget.history_backend.historyCleared.emit()
-
-            # Use a non-modal dialog to avoid blocking the event loop,
-            # which would prevent the historyCleared signal from being processed by the web page.
-            info_box = QMessageBox(QMessageBox.Icon.Information, "Information", "All browsing data has been cleared.", QMessageBox.StandardButton.Ok, self)
-            info_box.setWindowModality(Qt.WindowModality.NonModal)
-            info_box.show()
-    
-    def show_about(self):
-        # Check if an about tab is already open
-        for i in range(self.tab_widget.count()):
-            widget = self.tab_widget.widget(i)
-            if isinstance(widget, BrowserTab) and widget.url().toString() == "disunic://about":
-                self.tab_widget.set_current_index(i)
-                return
-
-        # If not, create a new tab for it
-        html = self.get_about_page_html()
-        browser = self.add_new_tab()
-        browser.setHtml(html, QUrl("disunic://about"))
-    
-    def add_new_tab(self, url=None, activate=True):
-        # This is a safeguard. Some signals (like from a button click) might pass a
-        # boolean `checked` state as the first argument. We must ensure `url` is not a bool.
-        if isinstance(url, bool):
-            url = None
-
-        # Ensure url is a QUrl object if it's passed as a string
-        if isinstance(url, str):
-            url = QUrl(url)
-
-        browser = BrowserTab(self.profile, self) # Pass main_window reference
-        browser.page_loaded_for_history.connect(self.add_to_history)
-        browser.urlChanged.connect(self.update_url_bar)
-        browser.urlChanged.connect(self.update_navigation_state)
-        browser.urlChanged.connect(self.update_bookmark_button_state)
-
-        browser.audioStateChanged.connect(self.update_tab_audio_indicator)
-        # Track loading state
-        browser.is_loading = False
-
-        def on_load_started():
-            browser.is_loading = True
-            self.update_status_message("Loading...")
-
-        def on_load_progress(p):
-            browser.is_loading = True
-            self.update_status_message(f"Loading... {p}%")
-
-        def on_load_finished(ok):
-            browser.is_loading = False
-            self.update_status_message("Ready" if ok else "Failed to load")
-            self.update_navigation_state()
-
-        browser.page().loadStarted.connect(on_load_started)
-        browser.page().loadProgress.connect(on_load_progress)
-        browser.page().loadFinished.connect(on_load_finished)
-
-        def on_find_finished(result):
-            if self.find_bar.isVisible():
-                self.find_bar.update_results(result.activeMatch(), result.numberOfMatches())
-        browser.page().findTextFinished.connect(on_find_finished)
-
-        browser.page().linkHovered.connect(lambda url: self.update_status_message(url if url else ("Loading..." if browser.is_loading else "Ready")))
-
-        browser.titleChanged.connect(self.update_tab_title)
-        browser.page().iconChanged.connect(lambda icon, b=browser: self.update_tab_icon(b, icon))
-
-        load_new_tab_page = False
-        if url is None or url.toString() == "disunic://newtab":
-            load_new_tab_page = True
-
-        # Add to stacked widget and tab bar
-        index = self.tab_widget.add_tab(browser, "Loading...")
-
-        if not activate:
-            self.tab_widget.set_current_index(index) # This seems counterintuitive, but it adds the tab without switching to it if another tab is active
-
-        # Load the content
-        if load_new_tab_page:
-            html = self.get_new_tab_html()
-            browser.setHtml(html, QUrl("disunic://newtab"))
-        elif url.toString() == "about:blank":
-            browser.setUrl(url)
-        else:
-            browser.setUrl(url)
-        
-        return browser
-
-    def add_to_history(self, url, title, icon):
-        icon_b64 = qicon_to_base64(icon)
-        self.history_manager.add_visit(url, title, icon_b64)
-
-    def on_tab_changed(self, index):
-        self.find_bar.hide_and_clear()
-        if index > -1:
-            widget = self.tab_widget.widget(index)
-
-            if isinstance(widget, BrowserTab):
-                url_str = widget.url().toString()
-                if hasattr(widget, "is_loading") and widget.is_loading:
-                    self.update_status_message("Loading...")
-                elif url_str == "disunic://history":
-                    self.update_status_message("History")
-                elif url_str == "disunic://about":
-                    self.update_status_message("About DisunicX")
-                else:
-                    self.update_status_message("Ready")
-                self.update_url_bar(widget.url())
-                self.update_bookmark_button_state(widget.url())
-            elif isinstance(widget, DownloadManagerPage):
-                self.update_url_bar(QUrl("disunic://downloads"))
-                self.update_status_message("Downloads")
-            elif isinstance(widget, SettingsPage):
-                self.update_url_bar(QUrl("disunic://settings"))
-                self.update_status_message("Settings")
-            
-            self.update_navigation_state()
-        else:
-            self.update_url_bar(QUrl(""))
-            self.update_status_message("Ready")
-            self.update_bookmark_button_state(QUrl(""))
-            self.update_navigation_state()
-    
-    def close_tab(self, index):
-        if self.tab_widget.count() > 1:
-            widget_to_remove = self.tab_widget.remove_tab(index)
-
-            # Special handling for the download manager tab
-            if widget_to_remove == self.download_manager:
-                self.download_manager_is_in_tab = False
-                # IMPORTANT: Do not delete the widget, just hide it.
-                # It's parented to the main window, so it won't be garbage collected.
-            elif widget_to_remove == self.settings_page:
-                self.settings_page_is_in_tab = False
-            else:
-                widget_to_remove.deleteLater() # Important to free memory
-        else:
-            self.close()
-    
-    def update_tab_audio_indicator(self, is_audible, is_muted):
-        sender_browser = self.sender()
-        if not isinstance(sender_browser, BrowserTab):
-            return
-
-        index = self.tab_widget.index_of(sender_browser)
-        if index == -1:
-            return
-
-        # The tab button is on the tab bar, which is inside the tab_widget
-        tab_bar = self.tab_widget.tab_bar
-        existing_button = tab_bar.tabButton(index, QTabBar.ButtonPosition.RightSide)
-
-        if not is_audible:
-            if existing_button:
-                tab_bar.setTabButton(index, QTabBar.ButtonPosition.RightSide, None)
-                existing_button.deleteLater()
-            return
-
-        button = existing_button
-        if not button:
-            button = QPushButton()
-            button.setObjectName("AudioIndicatorBtn")
-            button.setFlat(True)
-            button.clicked.connect(sender_browser.toggle_mute)
-            tab_bar.setTabButton(index, QTabBar.ButtonPosition.RightSide, button)
-
-        icon_color = self.theme["ICON_COLOR"]
-        if is_muted:
-            button.setIcon(create_icon_from_svg(SVG_ICONS["audio_muted"], icon_color, QSize(16, 16)))
-            button.setToolTip("Unmute Tab")
-        else:
-            button.setIcon(create_icon_from_svg(SVG_ICONS["audio_playing"], icon_color, QSize(16, 16)))
-            button.setToolTip("Mute Tab")
-
-    def show_find_bar(self):
-        browser = self.current_browser()
-        if isinstance(browser, BrowserTab):
-            self.find_bar.show_bar()
-
-    def on_find_next(self, text):
-        browser = self.current_browser()
-        if isinstance(browser, BrowserTab):
-            browser.page().findText(text)
-
-    def on_find_previous(self, text):
-        browser = self.current_browser()
-        if isinstance(browser, BrowserTab):
-            browser.page().findText(text, QWebEnginePage.FindFlags(QWebEnginePage.FindFlag.FindBackward))
-
-    def on_find_closed(self):
-        browser = self.current_browser()
-        if isinstance(browser, BrowserTab):
-            browser.page().findText("") # Clear find highlights
-
-    def current_browser(self):
-        return self.tab_widget.current_widget()
-
     def update_zoom_label(self):
         browser = self.current_browser()
         if isinstance(browser, BrowserTab):
             zoom_percentage = int(browser.zoomFactor() * 100)
-            self.zoom_label.setText(f"{zoom_percentage}%")
+            if hasattr(self, 'zoom_label'):
+                self.zoom_label.setText(f"{zoom_percentage}%")
 
-    def update_status_bar(self, message):
-        self.status.showMessage(message)
-    
-    def update_status_message(self, message="Ready"):
-        # Truncate long hover URLs
-        if message.startswith("http") and len(message) > 80:
-            message = message[:77] + "..."
-        self.status_label.setText(message) 
-        # # If the message is not the default "Ready", start a timer to clear it.
-        # if message != "Ready":
-        #     self.status_clear_timer.start()
-        # else:
-        #     # If we are setting it to ready, stop any pending clear timers.
-        #     self.status_clear_timer.stop()
+    def toggle_reader_mode(self):
+        """Toggles distraction-free reader mode on the current browser tab."""
+        current = self.current_browser()
+        if isinstance(current, BrowserTab):
+            self.reader_mode_manager.toggle(current)
 
-    def navigate_home(self):
-        html = self.get_new_tab_html()
-        self.current_browser().setHtml(html, QUrl("disunic://newtab"))
-
-    def navigate_to_url(self):
-        url = self.url_bar.url_edit.text().strip()
-        settings = QSettings("DisunicX", "Browser")
-        search_engine = settings.value("search_engine", "DuckDuckGo")
-        
-        if url.lower() == "disunic://settings":
-            self.open_settings()
-            return
-        
-        current_browser = self.current_browser()
-        
-        # Check if it's already a valid URL
-        if re.match(r"^(https?://|about:|file:)", url):
-            self.current_browser().setUrl(QUrl(url))
-            return
-        
-        # Check if it's a domain name (contains dot but no spaces)
-        if '.' in url and not ' ' in url and not url.startswith('www.'):
-            # Try with https:// prefix
-            self.current_browser().setUrl(QUrl(f"https://{url}"))
-            return
-        
-        SEARCH_URL_TEMPLATES = {
-            "Disunic": "https://souviknandi1.github.io/search.html#gsc.tab=0&gsc.sort=&gsc.q={{query}}",
-            "DuckDuckGo": "https://duckduckgo.com/?q={query}",
-            "Google": "https://www.google.com/search?q={query}",
-            "Bing": "https://www.bing.com/search?q={query}",
-            "Yahoo": "https://search.yahoo.com/search?p={query}",
-            "StartPage": "https://www.startpage.com/do/search?query={query}",
-            "Ecosia": "https://www.ecosia.org/search?q={query}",
-        }
-        
-        # Otherwise treat as search query
-        if settings.value("default_search", True, type=bool):
-            template = SEARCH_URL_TEMPLATES.get(search_engine, SEARCH_URL_TEMPLATES["DuckDuckGo"])
-            search_url = template.format(query=urllib.parse.quote(url))
-        else:
-            # Fallback to DuckDuckGo
-            template = SEARCH_URL_TEMPLATES["DuckDuckGo"]
-            search_url = template.format(query=urllib.parse.quote(url))
-        
-        self.current_browser().setUrl(QUrl(search_url))
-    
-    def update_url_bar(self, url):
-        self.url_bar.setUrl(url, self.SECURE_COLOR, self.DANGER_COLOR)
-        # Update Tor status based on the new URL
-        self.update_tor_status(url)
-        self.update_bookmark_button_state(url)
-
-    def update_bookmark_button_state(self, url):
-        if not isinstance(self.current_browser(), BrowserTab):
-            self.url_bar.bookmark_button.setVisible(False)
-            return
-
-        url_str = url.toString()
-        is_special_page = url_str.startswith(("disunic:", "about:", "view-source:")) or not url_str
-        
-        self.url_bar.bookmark_button.setVisible(not is_special_page)
-        if not is_special_page:
-            is_bookmarked = self.bookmarks_manager.is_bookmarked(url_str)
-            color = self.ACCENT_COLOR if is_bookmarked else self.theme["ICON_COLOR"]
-            self.url_bar.set_bookmark_icon(is_bookmarked, color)
-
-    def update_tab_title(self, title):
-        # Find the tab that emitted the signal
-        sender_browser = self.sender()
-        if sender_browser and self.tab_widget:
-            index = self.tab_widget.index_of(sender_browser)
-            if index != -1:
-                self.tab_widget.set_tab_text(index, title)
-                self.tab_widget.set_tab_tooltip(index, title)
-
-    def update_tab_icon(self, browser, icon):
-        if self.tab_widget: # type: ignore
-            index = self.tab_widget.index_of(browser) # type: ignore
-            if index != -1:
-                self.tab_widget.set_tab_icon(index, icon) # type: ignore
+    def toggle_notes_sidebar(self):
+        """Toggles visibility of the research notes sidebar panel."""
+        if hasattr(self, 'notes_sidebar'):
+            is_vis = self.notes_sidebar.isVisible()
+            self.notes_sidebar.setVisible(not is_vis)
+            if not is_vis:
+                self.notes_sidebar.apply_theme(self.theme)

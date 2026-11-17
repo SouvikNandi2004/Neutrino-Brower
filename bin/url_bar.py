@@ -14,6 +14,7 @@ from bin.utils import create_icon_from_svg, SVG_ICONS
 class UrlBar(QWidget):
     """A custom URL bar widget with integrated security and bookmark icons."""
     bookmarkButtonClicked = pyqtSignal()
+    readerButtonClicked = pyqtSignal()
 
     def __init__(self, theme, parent=None):
         super().__init__(parent)
@@ -44,8 +45,17 @@ class UrlBar(QWidget):
         self.bookmark_button.setCheckable(True)
         self.bookmark_button.clicked.connect(self.bookmarkButtonClicked)
         
+        self.reader_button = QPushButton()
+        self.reader_button.setObjectName("UrlBarButton")
+        self.reader_button.setFlat(True)
+        self.reader_button.setToolTip("Toggle Reader Mode (Ctrl+Alt+R)")
+        self.reader_button.setIcon(create_icon_from_svg(SVG_ICONS["reader_mode"], self.theme["ICON_COLOR"]))
+        self.reader_button.clicked.connect(self.readerButtonClicked)
+        self.reader_button.hide()
+
         self.layout.addWidget(self.security_icon)
         self.layout.addWidget(self.url_edit)
+        self.layout.addWidget(self.reader_button)
         self.layout.addWidget(self.bookmark_button)
         
         self.setProperty("hasFocus", False)
@@ -114,7 +124,7 @@ class UrlBar(QWidget):
     def _update_display(self):
         """Centralized method to update the URL bar's text based on focus."""
         # Special handling for the new tab page to always keep the bar empty for typing.
-        if self.full_url.toString() == "disunic://newtab":
+        if self.full_url.toString() in ["disunic://newtab", "neutrino://newtab", "qelaro://newtab"]:
             self.url_edit.clear()
             return
 
@@ -171,11 +181,17 @@ class UrlBar(QWidget):
         """Sets the URL for the bar, updating the text and icon."""
         self.full_url = url
         self._update_display()
-        self.set_security_icon(url.scheme() in ['https', 'disunic'], secure_color, insecure_color)
+        is_internal = url.scheme() in ['https', 'disunic', 'neutrino', 'qelaro']
+        self.set_security_icon(is_internal, secure_color, insecure_color)
+        
+        # Show reader button only for valid web pages (http/https)
+        url_str = url.toString()
+        can_read = url.scheme() in ['http', 'https'] and not url_str.startswith(("disunic:", "neutrino:", "about:"))
+        self.reader_button.setVisible(can_read)
 
     def format_url_for_display(self) -> str:
         """Creates a simplified 'pretty' version of the URL for display."""
-        if self.full_url.scheme() == "disunic":
+        if self.full_url.scheme() in ["disunic", "neutrino", "qelaro"]:
             host = self.full_url.host()
             if host == "newtab":
                 return ""  # Keep placeholder text for new tab

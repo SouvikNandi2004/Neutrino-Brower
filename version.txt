@@ -1,10 +1,10 @@
 # MIT License
 #
-# Copyright (c) 2021 Souvik Nandi, Neutrino
+# Copyright (c) 2021-2026 Souvik Nandi, Neutrino
 #
 # Permission is granted to use, copy, modify, and distribute this software for any purpose with or without fee, provided the copyright notice appears in all copies.
 #
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
 
-Version: 1.5.6
-Status: The Modernization & Polish Update
+Version: 2.0.0
+Status: The Modern Performance & Qelaro-Ready Architecture Update
