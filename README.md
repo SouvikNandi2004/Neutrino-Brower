@@ -3,7 +3,7 @@
 > [!CAUTION]
 > **No Pre-Built Releases Available**
 >
-> This browser currently does not have any pre-compiled releases or installer downloads. You can clone or download the source code and run it directly with Python, or build your own standalone executable (`.exe` on Windows or native binaries for other supported platforms) using PyInstaller or the included `build.bat` script.
+> This browser currently does not have any pre-compiled releases or installer downloads. You can clone or download the source code and run it directly with Python, or build your own standalone executable (`.exe` on Windows or native binaries for other supported platforms). Anyone can build the full browser simply by running `python bin/builder_page.py` (which launches the full graphical browser builder), or by using the included `build.bat` script or PyInstaller.
 
 A high-performance, privacy-focused desktop web browser built with Python and PyQt6, powered by Chromium (QtWebEngine) with native Tor network routing and modular components engineered for both Neutrino Browser and Qelaro Browser.
 
@@ -242,15 +242,25 @@ The subsystems developed for Neutrino Browser are structured as self-contained P
 
 ## Building Executables
 
-To package the browser into a standalone desktop executable:
+You can package the browser into a standalone desktop executable using several methods:
 
-### Windows
+### 1. Graphical Browser Builder (`bin/builder_page.py`)
+
+Anyone can build and customize the full browser using the integrated graphical builder:
+
+```bash
+python bin/builder_page.py
+```
+
+This interactive interface allows you to configure application names, icons, update endpoints, and package the browser into a standalone executable with live build logs.
+
+### 2. Batch Script (Windows)
 
 ```bat
 build.bat
 ```
 
-Or manually using PyInstaller:
+### 3. Command Line with PyInstaller
 
 ```bash
 pyinstaller --noconfirm --onedir --windowed --icon "favicon.ico" --add-data "bin;bin" --add-data "assets;assets" main.py
